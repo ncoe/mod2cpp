@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Nathan R Coe"
+	],
+	"copyright": "Copyright © 2019, Nathan R Coe",
+	"description": "Experiment in converting Modula-2 code to C++",
+	"license": "MIT",
+	"name": "mod2cpp"
+}

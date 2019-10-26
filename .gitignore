@@ -22,3 +22,11 @@ docs/
 
 # Code coverage
 *.lst
+
+# Visual D
+.vs/
+
+# Debug output
+build.bat
+*.stdout
+*.stderr
