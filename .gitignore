@@ -25,8 +25,9 @@ docs/
 
 # Visual D
 .vs/
+Win32
 
 # Debug output
-build.bat
+test.bat
 *.stdout
 *.stderr

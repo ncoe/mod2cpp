@@ -1,0 +1,232 @@
+######################################################################
+# BNF grammar from http://cui.unige.ch/isi/bnf/Modula2/BNFindex.html
+# Annoyingly, this was done as a rule per html page, which is hard to
+# get an overall view of.
+######################################################################
+
+compilation_unit ::= definition_module |
+      implementation_module |
+      program_module
+
+######################################################################
+# Rules sorted alphabetically to aid in finding
+######################################################################
+
+array_type ::= "ARRAY" simple_type { "," simple_type } "OF" type
+
+assignment ::= designator ":=" expression
+
+block ::= { declaration }
+      [ "BEGIN"
+      statement { ";" statement } ]
+      "END"
+
+# todo caselabels = case_labels?
+case ::= caselabels { "," caselabels } ":" statement { ";" statement }
+
+case_labels ::= const_expression [ ".." const_expression ]
+
+case_statement ::= "CASE" expression "OF"
+      case { "|" case }
+      [ "ELSE"
+      statement { ";" statement } ]
+      "END"
+
+constant_declaration ::= ident "=" const_expression
+
+const_expression ::=
+      simple_const_expr
+      [ ( "=" | "#" | "<>" | "<" | "<=" | ">" | ">=" | "IN" )
+      simple_const_expr ]
+
+const_factor ::= qualident | number | string | set |
+      "(" const_expression ")" |
+      "NOT" const_factor
+
+const_term ::= const_factor
+      { ( "*" | "/" | "DIV" | "MOD" | "AND" | "&" )
+      const_factor }
+
+declaration ::= "CONST" { constant_declaration ";" } |
+      "TYPE" { type_declaration ";" } |
+      "VAR" { variable_declaration ";" } |
+      procedure_declaration ";" |
+      module_declaration ";"
+
+definition ::= { ( "CONST" { constant_declaration ";" } ) |
+      ( "TYPE" { ident [ "=" type ] ";" } ) |
+      ( "VAR" { variable_declaration ";" } ) |
+      ( procedure_heading ";" ) }
+
+definition_module ::= "DEFINITION" "MODULE" ident ";"
+      { import }
+      [ export ]
+      definition "END" ident "."
+
+designator ::= qualident { "." ident |
+      "[" expression { "," expression } "]" |
+      "^" }
+
+element ::= const_expression [ ".." const_expression ]
+
+enumeration ::= "(" ident { "," ident } ")"
+
+expression ::= simple_expression
+      [ ( "=" | "#" | "<>" | "<" | "<=" | ">" | ">=" | "IN" )
+      simple_expression ]
+
+export ::= "EXPORT" [ "QUALIFIED" ] ident { "," ident } ";"
+
+factor ::= number | 
+      string | 
+      set | 
+      designator [ "(" [ expression { "," expression } ] ")" ] | 
+      "(" expression ")" | 
+      "NOT" factor
+
+field_list ::= [ ( ident { "," ident } ":" type ) |
+      ( "CASE" [ ident ":" ] qualident "OF"
+      variant { "|" variant }
+      [ "ELSE" field_list { ";" field_list } ]
+      "END" ) ]
+
+for_statement ::= "FOR" ident ":=" expression "TO" expression
+      [ "BY" const_expression ] "DO"
+      statement { ";" statement }
+      "END"
+
+formal_parameters ::= "(" fp_section { ";" fp_section } ")" 
+      [ ":" qualident ]
+
+formal_type ::= [ "ARRAY" "OF" ] qualident
+
+fp_section ::= [ "VAR" ] ident { "," ident } ":" [ "ARRAY" "OF" ] qualident
+
+if_statement ::= "IF" expression "THEN"
+      statement { ";" statement }
+      [ "ELSIF" expression "THEN"
+      statement { ";" statement } ]
+      [ "ELSE"
+      statement { ";" statement } ]
+      "END"
+
+implementation_module ::= "IMPLEMENTATION" program_module
+
+import ::= [ "FROM" ident ] "IMPORT" ident { "," ident } ";"
+
+loop_statement ::= "LOOP" statement { ";" statement } "END"
+
+module_declaration ::= "MODULE" ident [ "[" priority "]" ] ";"
+      { import }
+      [ export ]
+      block ident
+
+pointer_type ::= "POINTER" "TO" type
+
+priority ::= const_expression
+
+procedure_call ::= designator [ "(" [ expression { "," expression } ] ")" ]
+
+procedure_declaration ::= procedure_heading ";" block ident
+
+procedure_heading ::= "PROCEDURE" ident [ formal_parameters ] 
+
+procedure_type ::= "PROCEDURE" [
+      "(" [ [ "VAR" ] formal_type
+      { "," [ "VAR" ] formal_type } ] ")"
+      [ ":" qualident ] ]
+
+program_module ::= "MODULE" ident [ "[" priority "]" ] ";"
+      { import }
+      block ident "."
+
+qualident ::= ident { "." ident }
+
+record_type ::= "RECORD" field_list { ";" field_list } "END"
+
+repeat_statement ::= "REPEAT"
+      statement { ";" statement }
+      "UNTIL" expression
+
+set ::= [ qualident ] "{" [ element { "," element } ] "}"
+
+set_type ::= "SET" "OF" simple_type
+
+simple_const_expr ::= [ "+" | "-" ] const_term
+      { ( "+" | "-" | "OR" )
+      const_term }
+
+simple_expression ::= [ "+" | "-" ] term { ( "+" | "-" | "OR" ) term }
+
+simple_type ::= qualident | enumeration | subrange_type
+
+statement ::= [ assignment |
+      procedure_call |
+      if_statement |
+      case_statement |
+      while_statement |
+      repeat_statement |
+      loop_statement |
+      for_statement |
+      with_statement |
+      "EXIT" |
+      "RETURN" [ expression ] ]
+
+statement_sequence ::= statement { ";" statement }
+
+subrange_type ::= "[" const_expression ".." const_expression "]"
+
+term ::= factor { ( ( "*" | "/" | "DIV" | "MOD" | "AND" | "&" ) ) factor }
+
+type ::= simple_type | array_type | record_type | set_type 
+      | pointer_type | procedure_type
+
+type_declaration ::= ident "=" type
+
+variable_declaration ::= ident { "," ident } ":" type
+
+variant ::= case_labels { "," case_labels } ":" 
+      field_list { ";" field_list }
+
+while_statement ::= "WHILE" expression "DO"
+      statement { ";" statement }
+      "END"
+
+with_statement ::= "WITH" designator "DO"
+      statement { ";" statement }
+      "END"
+
+######################################################################
+# Literals (things usually not spelled out as nicely)
+######################################################################
+
+comment ::= "(*" { "any_character" } "*)"
+
+digit ::= octaldigit | "8" | "9"
+
+hexdigit ::= digit | "A" | "B" | "C" | "D" | "E" | "F"
+
+ident ::= identifier_letter { identifier_letter | digit }
+
+identifier_letter ::= upper_case_letter | lower_case_letter
+
+integer ::= ( digit { digit } ) |
+      ( octaldigit { octaldigit } ( "B" | "C" ) ) |
+      ( digit { hexdigit } "H" )
+
+lower_case_letter ::= "a" | "b" | "c" | "...etc..." | "z"
+
+number ::= integer | real
+
+octaldigit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
+
+real ::= digit { digit } "." { digit } [ scale_factor ]
+
+scale_factor ::= "E" [ "+" | "-" ] digit { digit }
+
+string ::= ( "'" { "one_character" } "'" ) |
+      ( "double_quote" { "one_character" } "double_quote" )
+
+upper_case_letter ::= "A" | "B" | "C" | "...etc..." | "Z"
+
+fin

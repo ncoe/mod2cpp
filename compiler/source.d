@@ -22,45 +22,53 @@ public class Source {
         pos = Position(1, 0, 0);
     }
 
-    public void pushBookmark() {
+    ///////////////////////////////////////////////////////
+
+    public void bookmark() nothrow {
         stack ~= pos;
     }
 
-    public void popBookmark() in {
+    public void rollback() nothrow in {
         assert(stack.length > 0);
     } body {
         pos = stack[$-1];
         stack.length--;
     }
 
-    public void discardBookmark() {
+    public void commit() nothrow {
         stack.length--;
     }
 
-    public bool empty() {
+    ///////////////////////////////////////////////////////
+
+    public bool empty() nothrow {
         return pos.currOffset >= text.length;
     }
 
-    public ubyte front() {
+    public ubyte front() nothrow {
         return text[pos.currOffset];
     }
 
-    public void popFront() {
+    public void popFront() nothrow {
         pos.currOffset++;
     }
 
-    public size_t offset() {
+    ///////////////////////////////////////////////////////
+
+    public size_t offset() nothrow {
         return pos.currOffset;
     }
 
-    public size_t length() {
+    public size_t length() nothrow {
         return text.length;
     }
 
-    public void updateLine() {
+    public void updateLine() nothrow {
         pos.lineNumber++;
         pos.lineOffset = pos.currOffset;
     }
+
+    ///////////////////////////////////////////////////////
 
     public void writeErrorContext(OutputRange)(OutputRange output) {
         auto end = pos.lineOffset;
