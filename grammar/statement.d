@@ -1,6 +1,7 @@
 module grammar.statement;
 
 import compiler.source;
+import compiler.util;
 import grammar.lex;
 
 // 5 Statements
@@ -19,9 +20,13 @@ import grammar.lex;
 //    whileStatement | repeatStatement | loopStatement | forStatement |
 //   withStatement | EXIT | RETURN expression? )?
 //  ;
-private bool statement(Source source) nothrow in {
-    assert(source);
-} body {
+private bool statement(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
 }
 
@@ -34,9 +39,12 @@ private bool statement(Source source) nothrow in {
 //statementSequence :
 //  statement ( ';' statement )*
 //  ;
-public bool statementSequence(Source source) nothrow in {
-    assert(source);
-} body {
+public bool statementSequence(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!statement(source)) return false;
 
     while (true) {

@@ -4,11 +4,15 @@ import std.array;
 import std.range;
 
 import compiler.source;
+import compiler.util;
 
-public bool consumeLiteral(Source source, const string expected) nothrow in {
-    assert(source);
-    assert(expected.length > 0);
-} body {
+public bool consumeLiteral(Source source, const string expected) nothrow
+in (source, "Why is the source null?")
+in (expected.length > 0, "The expected literal must have at least one character.")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
 
     auto end = source.offset + expected.length;
@@ -24,9 +28,12 @@ public bool consumeLiteral(Source source, const string expected) nothrow in {
     return false;
 }
 
-private bool isWhitespace(Source source) nothrow in {
-    assert(source);
-} body {
+private bool isWhitespace(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (source.empty) return false;
 
     auto c = source.front;
@@ -36,9 +43,12 @@ private bool isWhitespace(Source source) nothrow in {
         || c == '\r';
 }
 
-public bool consumeWhitespace(Source source) nothrow in {
-    assert(source);
-} body {
+public bool consumeWhitespace(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     bool found = false;
     while (isWhitespace(source)) {
         found = true;
@@ -80,9 +90,12 @@ public bool consumeWhitespace(Source source) nothrow in {
 //IDENTIFIER :
 //  LETTER ( LETTER | DIGIT )*
 //  ;
-public bool identifier(Source source) nothrow in {
-    assert(source);
-} body {
+public bool identifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (source.empty) return false;
 
     if (!isLetter(source.front)) return false;
@@ -107,9 +120,12 @@ public bool identifier(Source source) nothrow in {
 //  OCTAL_DIGIT+  ( 'B' | 'C' {}) |
 //  DIGIT ( HEX_DIGIT )* 'H'
 //  ;
-public bool wholeNumberLiteral(Source source) nothrow in {
-    assert(source);
-} body {
+public bool wholeNumberLiteral(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     // DIGIT ( HEX_DIGIT )* 'H'
     source.bookmark();
     if (isDigit(source.front)) {
@@ -122,6 +138,8 @@ public bool wholeNumberLiteral(Source source) nothrow in {
         if (consumeLiteral(source, "H")) {
             source.commit();
             return true;
+        } else {
+            source.rollback();
         }
     } else {
         source.rollback();
@@ -139,6 +157,8 @@ public bool wholeNumberLiteral(Source source) nothrow in {
         if (consumeLiteral(source, "B") || consumeLiteral(source, "C")) {
             source.commit();
             return true;
+        } else {
+            source.rollback();
         }
     } else {
         source.rollback();
@@ -167,9 +187,13 @@ public bool wholeNumberLiteral(Source source) nothrow in {
 //REAL :
 //  DIGIT+ '.' DIGIT* SCALE_FACTOR?
 //  ;
-public bool realLiteral(Source source) nothrow in {
-    assert(source);
-} body {
+public bool realLiteral(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
 }
 
@@ -186,9 +210,12 @@ public bool realLiteral(Source source) nothrow in {
 //STRING :
 //  '\'' ( CHARACTER | '\"' )* '\'' | '"' (CHARACTER | '\'')* '"'
 //  ;
-public bool stringLiteral(Source source) nothrow in {
-    assert(source);
-} body {
+public bool stringLiteral(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (consumeLiteral(source, "'")) {
         while (isCharacter(source.front)) {
@@ -283,9 +310,13 @@ private bool isHexDigit(ubyte u) nothrow {
 //SCALE_FACTOR :
 //  'E' ( '+' | '-' {})? DIGIT+
 //  ;
-private bool scaleFactor(Source source) nothrow in {
-    assert(source);
-} body {
+private bool scaleFactor(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
 }
 

@@ -1,6 +1,7 @@
 module grammar.block;
 
 import compiler.source;
+import compiler.util;
 import grammar.lex;
 import grammar.qualified;
 import grammar.statement;
@@ -17,9 +18,12 @@ import grammar.statement;
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-public bool properProcedureBlock(Source source) nothrow in {
-    assert(source);
-} body {
+public bool properProcedureBlock(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!declarations(source)) return false;
 
     source.bookmark();
@@ -36,8 +40,12 @@ public bool properProcedureBlock(Source source) nothrow in {
 //procedure_body :
 //  'BEGIN' block_body
 //  ;
-private bool procedureBody(Source source) nothrow in {
-} body {
+private bool procedureBody(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "BEGIN")) return false;
 
@@ -54,9 +62,12 @@ private bool procedureBody(Source source) nothrow in {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-public bool functionProcedureBlock(Source source) nothrow in {
-    assert(source);
-} body {
+public bool functionProcedureBlock(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!declarations(source)) return false;
 
     if (!functionBody(source)) return false;
@@ -68,8 +79,12 @@ public bool functionProcedureBlock(Source source) nothrow in {
 //function_body :
 //  'BEGIN' block_body
 //  ;
-private bool functionBody(Source source) nothrow in {
-} body {
+private bool functionBody(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "BEGIN")) return false;
 
@@ -86,9 +101,12 @@ private bool functionBody(Source source) nothrow in {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-public bool moduleBlock(Source source) nothrow in {
-    assert(source);
-} body {
+public bool moduleBlock(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!declarations(source)) return false;
 
     source.bookmark();
@@ -112,9 +130,12 @@ public bool moduleBlock(Source source) nothrow in {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-private bool moduleBody(Source source) nothrow in {
-    assert(source);
-} body {
+private bool moduleBody(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!initializationBody(source)) return false;
 
     source.bookmark();
@@ -135,9 +156,12 @@ private bool moduleBody(Source source) nothrow in {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-private bool initializationBody(Source source) nothrow in {
-    assert(source);
-} body {
+private bool initializationBody(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "BEGIN")) return false;
 
@@ -149,9 +173,12 @@ private bool initializationBody(Source source) nothrow in {
 //finalization_body :
 //  'FINALLY' block_body
 //  ;
-private bool finalizationBody(Source source) nothrow in {
-    assert(source);
-} body {
+private bool finalizationBody(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "FINALLY")) return false;
 
@@ -165,9 +192,12 @@ private bool finalizationBody(Source source) nothrow in {
 //block_body :
 //  normal_part ( 'EXCEPT' exceptional_part )?
 //  ;
-private bool blockBody(Source source) nothrow in {
-    assert(source);
-} body {
+private bool blockBody(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!normalPart(source)) return false;
 
     source.bookmark();
@@ -188,17 +218,23 @@ private bool blockBody(Source source) nothrow in {
 //normal_part :
 //  statement_sequence
 //  ;
-private bool normalPart(Source source) nothrow in {
-    assert(source);
-} body {
+private bool normalPart(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return statementSequence(source);
 }
 
 //exceptional_part :
 //  statement_sequence
 //  ;
-private bool exceptionalPart(Source source) nothrow in {
-    assert(source);
-} body {
+private bool exceptionalPart(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return statementSequence(source);
 }

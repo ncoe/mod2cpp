@@ -3,6 +3,7 @@ module grammar.program;
 import compiler.source;
 import compiler.util;
 import grammar.block;
+import grammar.expression;
 import grammar.lex;
 import grammar.types;
 
@@ -16,15 +17,19 @@ import grammar.types;
 //compilationUnit :
 //  definitionModule | IMPLEMENTATION? programModule
 //  ;
-public bool compilationUnit(Source source) nothrow in {
-    assert(source);
-} body {
+public bool compilationUnit(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     size_t highwater;
 
     source.bookmark();
 
     source.bookmark();
     if (definitionModule(source)) {
+        source.commit();
         source.commit();
         return true;
     } else {
@@ -35,11 +40,14 @@ public bool compilationUnit(Source source) nothrow in {
     source.bookmark();
     if (implementationModule(source)) {
         source.commit();
+        source.commit();
         return true;
     } else {
         auto iPos = source.offset;
         if (iPos > highwater) {
             debugWrite(source, "Failed to parse an implementation module, made it to:");
+            source.rollback();
+            source.rollback();
             return false;
         }
         source.rollback();
@@ -48,11 +56,14 @@ public bool compilationUnit(Source source) nothrow in {
     source.bookmark();
     if (programModule(source)) {
         source.commit();
+        source.commit();
         return true;
     } else {
         auto pPos = source.offset;
         if (pPos > highwater) {
             debugWrite(source, "Failed to parse a program module module, made it to:");
+            source.rollback();
+            source.rollback();
             return false;
         }
         source.rollback();
@@ -76,9 +87,12 @@ public bool compilationUnit(Source source) nothrow in {
 //  MODULE ident priority? ';'
 //  importList* block ident '.'
 //  ;
-private bool programModule(Source source) nothrow in {
-    assert(source);
-} body {
+private bool programModule(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "MODULE")) return false;
 
@@ -111,9 +125,12 @@ private bool programModule(Source source) nothrow in {
 //module_identifier :
 //  identifier
 //  ;
-public bool moduleIdentifier(Source source) nothrow in {
-    assert(source);
-} body {
+public bool moduleIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return identifier(source);
 }
 
@@ -124,9 +141,12 @@ public bool moduleIdentifier(Source source) nothrow in {
 //priority :
 //  '[' constExpression ']'
 //  ;
-public bool protection(Source source) nothrow in {
-    assert(source);
-} body {
+public bool protection(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "[")) return false;
 
@@ -139,10 +159,13 @@ public bool protection(Source source) nothrow in {
 //protection_expression :
 //  constant_expression
 //  ;
-private bool protectionExpression(Source source) nothrow in {
-    assert(source);
-} body {
-    assert(false, "todo finish this");
+private bool protectionExpression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return constantExpression(source);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,9 +181,12 @@ private bool protectionExpression(Source source) nothrow in {
 //  importList* exportList? definition*
 //  END ident '.'
 //  ;
-private bool definitionModule(Source source) nothrow in {
-    assert(source);
-} body {
+private bool definitionModule(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "DEFINITION")) return false;
 
@@ -200,9 +226,12 @@ private bool definitionModule(Source source) nothrow in {
 //compilationUnit :	
 //  definitionModule | IMPLEMENTATION? programModule
 //  ;
-private bool implementationModule(Source source) nothrow in {
-    assert(source);
-} body {
+private bool implementationModule(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "IMPLEMENTATION")) return false;
 
@@ -240,9 +269,12 @@ private bool implementationModule(Source source) nothrow in {
 //import_lists :
 //  ( import_list )*
 //  ;
-public bool importLists(Source source) nothrow in {
-    assert(source);
-} body {
+public bool importLists(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     while (true) {
         source.bookmark();
 
@@ -267,9 +299,12 @@ public bool importLists(Source source) nothrow in {
 //importList :
 //  ( FROM ident )? IMPORT identList ';'
 //  ;
-private bool importList(Source source) nothrow in {
-    assert(source);
-} body {
+private bool importList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (simpleImport(source)) {
         source.commit();
@@ -296,9 +331,12 @@ private bool importList(Source source) nothrow in {
 //  ( FROM moduleId IMPORT ( identList | '*' ) |
 //    IMPORT ident '+'? ( ',' ident '+'? )* ) ';'
 //  ;
-private bool simpleImport(Source source) nothrow in {
-    assert(source);
-} body {
+private bool simpleImport(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "IMPORT")) return false;
 
@@ -340,9 +378,12 @@ private bool simpleImport(Source source) nothrow in {
 //  ( FROM moduleId IMPORT ( identList | '*' ) |
 //    IMPORT ident '+'? ( ',' ident '+'? )* ) ';'
 //  ;
-private bool unqualifiedImport(Source source) nothrow in {
-    assert(source);
-} body {
+private bool unqualifiedImport(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "FROM")) return false;
 
@@ -385,9 +426,12 @@ private bool unqualifiedImport(Source source) nothrow in {
 //exportList :
 //  EXPORT QUALIFIED? identList ';'
 //  ;
-public bool exportList(Source source) nothrow in {
-    assert(source);
-} body {
+public bool exportList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (qualifiedExport(source)) {
         source.commit();
@@ -413,9 +457,12 @@ public bool exportList(Source source) nothrow in {
 //unqualified_export :
 //  'EXPORT' identifier_list ';'
 //  ;
-private bool unqualifiedExport(Source source) nothrow in {
-    assert(source);
-} body {
+private bool unqualifiedExport(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "EXPORT")) return false;
 
@@ -434,9 +481,12 @@ private bool unqualifiedExport(Source source) nothrow in {
 //qualified_export :
 //  'EXPORT' 'QUALIFIED' identifier_list ';'
 //  ;
-private bool qualifiedExport(Source source) nothrow in {
-    assert(source);
-} body {
+private bool qualifiedExport(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "EXPORT")) return false;
 

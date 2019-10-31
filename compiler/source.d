@@ -17,9 +17,13 @@ public class Source {
         text = cast(ubyte[])readText(fileName);
     }
 
-    public void reset() {
+    public void reset() nothrow {
         stack.length = 0;
         pos = Position(1, 0, 0);
+    }
+
+    public auto depth() nothrow {
+        return stack.length;
     }
 
     ///////////////////////////////////////////////////////
@@ -28,9 +32,9 @@ public class Source {
         stack ~= pos;
     }
 
-    public void rollback() nothrow in {
-        assert(stack.length > 0);
-    } body {
+    public void rollback() nothrow
+    in (stack.length > 0)
+    do {
         pos = stack[$-1];
         stack.length--;
     }

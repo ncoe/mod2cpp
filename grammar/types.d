@@ -1,6 +1,7 @@
 module grammar.types;
 
 import compiler.source;
+import compiler.util;
 import grammar.expression;
 import grammar.lex;
 import grammar.qualified;
@@ -10,25 +11,33 @@ import grammar.qualified;
 //type_denoter :
 //  type_identifier | new_type
 //  ;
-public bool typeDenoter(Source source) nothrow in {
-    assert(source);
-} body {
+public bool typeDenoter(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (newType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
 
+    consumeWhitespace(source);
     return typeIdentifier(source);
 }
 
 //ordinal_type_denoter :
 //  ordinal_type_identifier | new_ordinal_type
 //  ;
-private bool ordinalTypeDenoter(Source source) nothrow in {
-    assert(source);
-} body {
+private bool ordinalTypeDenoter(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (newOrdinalType(source)) {
         source.commit();
@@ -45,18 +54,24 @@ private bool ordinalTypeDenoter(Source source) nothrow in {
 //type_identifier :
 //  qualified_identifier 
 //  ;
-public bool typeIdentifier(Source source) nothrow in {
-    assert(source);
-} body {
+public bool typeIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return qualifiedIdentifier(source);
 }
 
 //ordinal_type_identifier :
 //  type_identifier
 //  ;
-private bool ordinalTypeIdentifier(Source source) nothrow in {
-    assert(source);
-} body {
+private bool ordinalTypeIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return typeIdentifier(source);
 }
 
@@ -70,12 +85,16 @@ private bool ordinalTypeIdentifier(Source source) nothrow in {
 //type :
 //  simpleType | arrayType | recordType | setType | pointerType | procedureType
 //  ;
-private bool newType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool newType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (arrayType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
@@ -83,6 +102,7 @@ private bool newType(Source source) nothrow in {
     source.bookmark();
     if (packedsetType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
@@ -90,6 +110,7 @@ private bool newType(Source source) nothrow in {
     source.bookmark();
     if (pointerType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
@@ -97,6 +118,7 @@ private bool newType(Source source) nothrow in {
     source.bookmark();
     if (procedureType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
@@ -104,6 +126,7 @@ private bool newType(Source source) nothrow in {
     source.bookmark();
     if (recordType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
@@ -111,6 +134,7 @@ private bool newType(Source source) nothrow in {
     source.bookmark();
     if (setType(source)) {
         source.commit();
+        return true;
     } else {
         source.rollback();
     }
@@ -125,9 +149,12 @@ private bool newType(Source source) nothrow in {
 //simpleType :
 //  qualident | enumeration | subrangeType
 //  ;
-private bool newOrdinalType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool newOrdinalType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (enumerationType(source)) {
         source.commit();
@@ -148,9 +175,12 @@ private bool newOrdinalType(Source source) nothrow in {
 //enumeration :
 //  '(' identList ')'
 //  ;
-private bool enumerationType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool enumerationType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "(")) return false;
 
@@ -163,9 +193,12 @@ private bool enumerationType(Source source) nothrow in {
 //identifier_list :
 //  identifier ( ',' identifier )*
 //  ;
-public bool identifierList(Source source) nothrow in {
-    assert(source);
-} body {
+public bool identifierList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!identifier(source)) return false;
 
@@ -199,9 +232,12 @@ public bool identifierList(Source source) nothrow in {
 //subrangeType :
 //  '[' constExpression '..' constExpression ']'
 //  ;
-private bool subrangeType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool subrangeType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (rangeType(source)) {
         source.commit();
@@ -226,9 +262,12 @@ private bool subrangeType(Source source) nothrow in {
 //range_type :
 //  ordinal_type_identifier
 //  ;
-private bool rangeType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool rangeType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return ordinalTypeIdentifier(source);
 }
 
@@ -241,9 +280,12 @@ private bool rangeType(Source source) nothrow in {
 //setType :
 //  SET OF simpleType
 //  ;
-private bool setType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool setType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "SET")) return false;
 
@@ -256,9 +298,12 @@ private bool setType(Source source) nothrow in {
 //base_type :
 //  ordinal_type_denoter
 //  ;
-private bool baseType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool baseType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return ordinalTypeDenoter(source);
 }
 
@@ -267,9 +312,12 @@ private bool baseType(Source source) nothrow in {
 //packedset_type :
 //  'PACKEDSET' 'OF' base_type
 //  ;
-private bool packedsetType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool packedsetType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "PACKEDSET")) return false;
 
@@ -288,9 +336,12 @@ private bool packedsetType(Source source) nothrow in {
 //pointerType :
 //  POINTER TO type
 //  ;
-private bool pointerType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool pointerType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "POINTER")) return false;
 
@@ -303,9 +354,12 @@ private bool pointerType(Source source) nothrow in {
 //bound_type :
 //  type_denoter
 //  ;
-private bool boundType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool boundType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return typeDenoter(source);
 }
 
@@ -318,13 +372,18 @@ private bool boundType(Source source) nothrow in {
 //procedureType :
 //  PROCEDURE formalTypeList?
 //  ;
-private bool procedureType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool procedureType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (functionPocedureType(source)) {
         source.commit();
         return true;
+    } else {
+        source.rollback();
     }
 
     return properPocedureType(source);
@@ -334,9 +393,12 @@ private bool procedureType(Source source) nothrow in {
 //proper_procedure_type :
 //  'PROCEDURE' '(' ( formal_parameter_type_list )? ')'
 //  ;
-private bool properPocedureType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool properPocedureType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "PROCEDURE")) return false;
 
@@ -359,9 +421,12 @@ private bool properPocedureType(Source source) nothrow in {
 //  'PROCEDURE' '(' ( formal_parameter_type_list )? ')'
 //  ':' function_result_type
 //  ;
-private bool functionPocedureType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool functionPocedureType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "PROCEDURE")) return false;
 
@@ -387,9 +452,12 @@ private bool functionPocedureType(Source source) nothrow in {
 //formal_parameter_type_list :
 //  formal_parameter_type ( ',' formal_parameter_type )*
 //  ;
-private bool formalParamterTypeList(Source source) nothrow in {
-    assert(source);
-} body {
+private bool formalParamterTypeList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!formalParamterType(source)) return false;
 
     while (true) {
@@ -415,9 +483,12 @@ private bool formalParamterTypeList(Source source) nothrow in {
 //formal_parameter_type :
 //  variable_formal_type | value_formal_type
 //  ;
-private bool formalParamterType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool formalParamterType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (variableFormalType(source)) {
         source.commit();
@@ -432,9 +503,12 @@ private bool formalParamterType(Source source) nothrow in {
 //variable_formal_type :
 //  'VAR' formal_type
 //  ;
-private bool variableFormalType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool variableFormalType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (consumeLiteral(source, "VAR")) return false;
 
@@ -445,9 +519,12 @@ private bool variableFormalType(Source source) nothrow in {
 //value_formal_type :
 //  formal_type
 //  ;
-private bool valueFormalType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool valueFormalType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return formalType(source);
 }
 
@@ -460,9 +537,12 @@ private bool valueFormalType(Source source) nothrow in {
 //formalType :
 //  ( ARRAY OF )? qualident
 //  ;
-public bool formalType(Source source) nothrow in {
-    assert(source);
-} body {
+public bool formalType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (openArrayFormalType(source)) {
         source.commit();
@@ -477,9 +557,12 @@ public bool formalType(Source source) nothrow in {
 //open_array_formal_type :
 //  'ARRAY' 'OF' ( 'ARRAY' 'OF' )* type_identifier
 //  ;
-private bool openArrayFormalType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool openArrayFormalType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "ARRAY")) return false;
 
@@ -522,9 +605,12 @@ private bool openArrayFormalType(Source source) nothrow in {
 //arrayType :
 //  ARRAY simpleType ( ',' simpleType )* OF type
 //  ;
-private bool arrayType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool arrayType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "ARRAY")) return false;
 
@@ -556,18 +642,24 @@ private bool arrayType(Source source) nothrow in {
 //index_type :
 //  ordinal_type_denoter
 //  ;
-private bool indexType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool indexType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return ordinalTypeDenoter(source);
 }
 
 //component_type :
 //  type_denoter
 //  ;
-private bool componentType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool componentType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return typeDenoter(source);
 }
 
@@ -580,13 +672,16 @@ private bool componentType(Source source) nothrow in {
 //recordType :
 //  RECORD fieldListSequence END
 //  ;
-private bool recordType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool recordType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "RECORD")) return false;
 
-    //todo field list
+    debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
 
     //consumeWhitespace(source);

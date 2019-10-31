@@ -1,6 +1,7 @@
 module grammar.qualified;
 
 import compiler.source;
+import compiler.util;
 import grammar.block;
 import grammar.expression;
 import grammar.lex;
@@ -16,9 +17,12 @@ import grammar.types;
 //qualident :
 //  ident ( '.' ident )*
 //  ;
-public bool qualifiedIdentifier(Source source) nothrow in {
-    assert(source);
-} body {
+public bool qualifiedIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     while (true) {
         source.bookmark();
 
@@ -80,9 +84,12 @@ public bool qualifiedIdentifier(Source source) nothrow in {
 //procedureHeading :
 //  PROCEDURE ident formalParameters?
 //  ;
-private bool properProcedureHeading(Source source) nothrow in {
-    assert(source);
-} body {
+private bool properProcedureHeading(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "PROCEDURE")) return false;
 
@@ -106,9 +113,12 @@ private bool properProcedureHeading(Source source) nothrow in {
 //formalParameters :
 //'(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //;
-private bool formalParameters(Source source) nothrow in {
-    assert(source);
-} body {
+private bool formalParameters(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "(")) return false;
 
@@ -129,9 +139,12 @@ private bool formalParameters(Source source) nothrow in {
 //formalParameters :
 //  '(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //  ;
-private bool formalParameterList(Source source) nothrow in {
-    assert(source);
-} body {
+private bool formalParameterList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!formalParameter(source)) return false;
 
     while (true) {
@@ -168,9 +181,12 @@ private bool formalParameterList(Source source) nothrow in {
 //formalParameters :
 //'(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //;
-private bool functionProcedureHeading(Source source) nothrow in {
-    assert(source);
-} body {
+private bool functionProcedureHeading(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "PROCEDURE")) return false;
 
@@ -197,9 +213,12 @@ private bool functionProcedureHeading(Source source) nothrow in {
 //formalParameters :
 //'(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //;
-public bool functionResultType(Source source) nothrow in {
-    assert(source);
-} body {
+public bool functionResultType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return typeIdentifier(source);
 }
 
@@ -212,9 +231,12 @@ public bool functionResultType(Source source) nothrow in {
 //fpSection :
 //  VAR? identList ':' formalType
 //  ;
-private bool formalParameter(Source source) nothrow in {
-    assert(source);
-} body {
+private bool formalParameter(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (variableParameterSpecification(source)) {
         source.commit();
@@ -243,9 +265,12 @@ private bool formalParameter(Source source) nothrow in {
 //fpSection :
 //  VAR? identList ':' formalType
 //  ;
-private bool valueParameterSpecification(Source source) nothrow in {
-    assert(source);
-} body {
+private bool valueParameterSpecification(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!identifierList(source)) return false;
 
@@ -265,9 +290,12 @@ private bool valueParameterSpecification(Source source) nothrow in {
 //fpSection :
 //  VAR? identList ':' formalType
 //  ;
-private bool variableParameterSpecification(Source source) nothrow in {
-    assert(source);
-} body {
+private bool variableParameterSpecification(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "VAR")) return false;
 
@@ -286,9 +314,12 @@ private bool variableParameterSpecification(Source source) nothrow in {
 //declarations :
 //  ( declaration )*
 //  ;
-public bool declarations(Source source) nothrow in {
-    assert(source);
-} body {
+public bool declarations(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     while (true) {
         source.bookmark();
 
@@ -318,9 +349,12 @@ public bool declarations(Source source) nothrow in {
 //  procedureDeclaration ';' |
 //  moduleDeclaration ';'
 //  ;
-private bool declaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool declaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
 
     source.bookmark();
@@ -421,9 +455,12 @@ private bool declaration(Source source) nothrow in {
 //constantDeclaration :	
 //  ident '=' constExpression
 //  ;
-private bool constantDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool constantDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!identifier(source)) return false;
 
@@ -439,9 +476,13 @@ private bool constantDeclaration(Source source) nothrow in {
 //type_declaration :
 //  identifier '=' type_denoter
 //  ;
-private bool typeDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool typeDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
 }
 
@@ -454,9 +495,12 @@ private bool typeDeclaration(Source source) nothrow in {
 //variableDeclaration :
 //  identList ':' type
 //  ;
-private bool variableDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool variableDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!variableIdentifierList(source)) return false;
 
     consumeWhitespace(source);
@@ -468,9 +512,12 @@ private bool variableDeclaration(Source source) nothrow in {
 //variable_identifier_list :
 //  identifier ( machine_address )? ( ',' identifier ( machine_address )? )*
 //  ;
-private bool variableIdentifierList(Source source) nothrow in {
-    assert(source);
-} body {
+private bool variableIdentifierList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     bool lambda() {
         consumeWhitespace(source);
         if (!identifier(source)) return false;
@@ -510,9 +557,12 @@ private bool variableIdentifierList(Source source) nothrow in {
 //machine_address :
 //  '[' value_of_address_type ']'
 //  ;
-private bool machineAddress(Source source) nothrow in {
-    assert(source);
-} body {
+private bool machineAddress(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "[")) return false;
 
@@ -524,9 +574,12 @@ private bool machineAddress(Source source) nothrow in {
 //value_of_address_type :
 //  constant_expression
 //  ;
-private bool valueOfAddressType(Source source) nothrow in {
-    assert(source);
-} body {
+private bool valueOfAddressType(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return constantExpression(source);
 }
 
@@ -539,9 +592,12 @@ private bool valueOfAddressType(Source source) nothrow in {
 //procedureDeclaration :
 //  procedureHeading ';' block ident
 //  ;
-private bool procedureDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool procedureDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     source.bookmark();
     if (functionProcedureDeclaration(source)) {
         source.commit();
@@ -567,9 +623,12 @@ private bool procedureDeclaration(Source source) nothrow in {
 //  proper_procedure_heading ';'
 //  ( proper_procedure_block procedure_identifier | 'FORWARD' )
 //  ;
-private bool properProcedureDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool properProcedureDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!properProcedureHeading(source)) return false;
 
     consumeWhitespace(source);
@@ -593,8 +652,12 @@ private bool properProcedureDeclaration(Source source) nothrow in {
 //procedure_identifier :
 //  identifier
 //  ;
-private bool procedureIdentifier(Source source) nothrow in {
-} body {
+private bool procedureIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     return identifier(source);
 }
 
@@ -604,9 +667,12 @@ private bool procedureIdentifier(Source source) nothrow in {
 //  function_procedure_heading ';'
 //  ( function_procedure_block procedure_identifier | 'FORWARD' )
 //  ;
-private bool functionProcedureDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool functionProcedureDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!functionProcedureHeading(source)) return false;
 
     consumeWhitespace(source);
@@ -639,9 +705,12 @@ private bool functionProcedureDeclaration(Source source) nothrow in {
 //  importList* exportList?
 //  block ident
 //  ;
-private bool localModuleDeclaration(Source source) nothrow in {
-    assert(source);
-} body {
+private bool localModuleDeclaration(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "MODULE")) return false;
 

@@ -1,6 +1,7 @@
 module grammar.expression;
 
 import compiler.source;
+import compiler.util;
 import grammar.lex;
 import grammar.qualified;
 
@@ -40,9 +41,12 @@ import grammar.qualified;
 //relation :
 //  '=' | '#' | '<>' | '<' | '<=' | '>' | '>=' | 'IN' {}
 //  ;
-private bool relationalOperator(Source source) nothrow in {
-    assert(source);
-} body {
+private bool relationalOperator(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
 
     if (consumeLiteral(source, "IN")) return true;
@@ -65,9 +69,12 @@ private bool relationalOperator(Source source) nothrow in {
 //  '+' | '-' | OR
 //  {} // make ANTLRworks display separate branches
 //  ;
-private bool addOperator(Source source) nothrow in {
-    assert(source);
-} body {
+private bool addOperator(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
 
     if (consumeLiteral(source, "OR")) return true;
@@ -86,9 +93,12 @@ private bool addOperator(Source source) nothrow in {
 //  '*' | '/' | DIV | MOD | AND | '&'
 //  {} // make ANTLRworks display separate branches
 //  ;
-private bool mulOperator(Source source) nothrow in {
-    assert(source);
-} body {
+private bool mulOperator(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
 
     if (consumeLiteral(source, "AND")) return true;
@@ -241,9 +251,12 @@ private bool mulOperator(Source source) nothrow in {
 //constExpression :
 //  simpleConstExpr ( relation simpleConstExpr )?
 //  ;
-public bool constantExpression(Source source) nothrow in {
-    assert(source);
-} body {
+public bool constantExpression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!simpleConstExpression(source)) return false;
 
     while (true) {
@@ -269,9 +282,12 @@ public bool constantExpression(Source source) nothrow in {
 //simpleConstExpr :
 //  ( '+' | '-' {})? constTerm ( addOperator constTerm )*
 //  ;
-private bool simpleConstExpression(Source source) nothrow in {
-    assert(source);
-} body {
+private bool simpleConstExpression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "+")) {
         consumeLiteral(source, "-");
@@ -302,9 +318,12 @@ private bool simpleConstExpression(Source source) nothrow in {
 //constTerm :
 //  constFactor ( mulOperator constFactor )*
 //  ;
-private bool constTerm(Source source) nothrow in {
-    assert(source);
-} body {
+private bool constTerm(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!constFactor(source)) return false;
 
     while (true) {
@@ -335,9 +354,12 @@ private bool constTerm(Source source) nothrow in {
 //  number | string | setOrQualident |
 //  '(' constExpression ')' | ( NOT | '~' {}) constFactor
 //  ;
-private bool constFactor(Source source) nothrow in {
-    assert(source);
-} body {
+private bool constFactor(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
 
     // number
@@ -381,9 +403,12 @@ private bool constFactor(Source source) nothrow in {
 //setOrQualident :
 //  set | qualident set?
 //  ;
-private bool setOrQualident(Source source) nothrow in {
-    assert(source);
-} body {
+private bool setOrQualident(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     // qualident set?
     source.bookmark();
     if (qualifiedIdentifier(source)) {
@@ -409,9 +434,12 @@ private bool setOrQualident(Source source) nothrow in {
 //  /* qualident has been factored out */
 //  '{' ( element ( ',' element )* )? '}'
 //  ;
-private bool set(Source source) nothrow in {
-    assert(source);
-} body {
+private bool set(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     consumeWhitespace(source);
     if (!consumeLiteral(source, "{")) return false;
 
@@ -447,9 +475,12 @@ private bool set(Source source) nothrow in {
 //element :
 //  constExpression ( '..' constExpression )?
 //  ;
-private bool element(Source source) nothrow in {
-    assert(source);
-} body {
+private bool element(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
     if (!constantExpression(source)) return false;
 
     while (true) {
