@@ -14,7 +14,7 @@
   <verbose>0</verbose>
   <vtls>0</vtls>
   <vgc>0</vgc>
-  <symdebug>1</symdebug>
+  <symdebug>2</symdebug>
   <symdebugref>1</symdebugref>
   <optimize>0</optimize>
   <cpu>0</cpu>
@@ -81,7 +81,7 @@
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
   <hdrname />
-  <doXGeneration>1</doXGeneration>
+  <doXGeneration>0</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
   <debugids />
@@ -135,7 +135,7 @@
   <verbose>0</verbose>
   <vtls>0</vtls>
   <vgc>0</vgc>
-  <symdebug>0</symdebug>
+  <symdebug>2</symdebug>
   <symdebugref>1</symdebugref>
   <optimize>1</optimize>
   <cpu>0</cpu>
@@ -202,7 +202,7 @@
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
   <hdrname />
-  <doXGeneration>1</doXGeneration>
+  <doXGeneration>0</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
   <debugids />
@@ -485,6 +485,13 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep;*.tlog</filesToClean>
  </Config>
  <Folder name="mod2cpp">
+  <Folder name="reference">
+   <File path="reference\g1.txt" />
+   <File path="reference\g2.txt" />
+   <File path="reference\m2iso.g" />
+   <File path="reference\m2pim4_LL1.g" />
+   <File path="reference\objm2.g" />
+  </Folder>
   <Folder name="source">
    <Folder name="compiler">
     <File path="compiler\source.d" />
@@ -502,13 +509,6 @@
     <File path="grammar\variable.d" />
    </Folder>
    <File path="mod2cpp.d" />
-  </Folder>
-  <Folder name="reference">
-   <File path="reference\g1.txt" />
-   <File path="reference\g2.txt" />
-   <File path="reference\m2iso.g" />
-   <File path="reference\m2pim4_LL1.g" />
-   <File path="reference\objm2.g" />
   </Folder>
  </Folder>
 </DProject>

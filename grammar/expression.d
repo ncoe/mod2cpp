@@ -4,12 +4,22 @@ import compiler.source;
 import compiler.util;
 import grammar.lex;
 import grammar.qualified;
+import grammar.variable;
 
 // 7 Expressions
 
 //expression :
 //  simple_expression ( relational_operator simple_expression )?
 //  ;
+public bool expression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    debugWrite(source, "End of Implementation");
+    assert(false, "todo finish this");
+}
 
 //simple_expression :
 //  ( '+' | '-' )? term ( term_operator term )*
@@ -117,11 +127,98 @@ do {
 //value_designator :
 //  entire_value | indexed_value | selected_value | dereferenced_value
 //  ;
+// ***** PIM 4 Appendix 1 line 45 *****
+// refactored for LL(1)
+//designator :
+//  qualident ( designatorTail )?
+//  ;
+public bool valueDesignator(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    if (!qualifiedIdentifier(source)) return false;
+
+    source.bookmark();
+    if (designatorTail(source)) {
+        source.commit();
+    } else {
+        source.rollback();
+    }
+
+    return true;
+}
+
+// ***** PIM 4 Appendix 1 line 45 *****
+// new for LL(1)
+//designatorTail :
+//  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
+//  ;
+private bool designatorTail(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    // alternatively:
+    //  indexed_value as '[' index_expression ( ',' index_expression )* ']'
+    //  dereferenced_value as '^'
+    //  selected_value
+
+    bool lambda() {
+        consumeWhitespace(source);
+
+        source.bookmark();
+        if (indexedValue(source)) {
+            source.commit();
+        } else {
+            source.rollback();
+
+            if (!dereferencedValue(source)) {
+                return false;
+            }
+        }
+
+        while (true) {
+            source.bookmark();
+
+            if (!selectedValue(source)) {
+                source.rollback();
+                break;
+            }
+
+            source.commit();
+        }
+
+        return true;
+    }
+
+    if (!lambda()) return false;
+
+    while (true) {
+        source.bookmark();
+
+        if (!lambda()) {
+            source.rollback();
+            break;
+        }
+
+        source.commit();
+    }
+
+    return true;
+}
 
 // 7.2.1 Entire Value
 
 //entire_value :
 //  qualified_identifier
+//  ;
+// ***** PIM 4 Appendix 1 line 45 *****
+// new for LL(1)
+//designatorTail :
+//  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
 //  ;
 
 // 7.2.2 Indexed Value
@@ -129,6 +226,50 @@ do {
 //indexed_value :
 //  array_value '[' index_expression ( ',' index_expression )* ']'
 //  ;
+// ***** PIM 4 Appendix 1 line 45 *****
+// new for LL(1)
+//designatorTail :
+//  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
+//  ;
+private bool indexedValue(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    consumeWhitespace(source);
+    if (!consumeLiteral(source, "[")) return false;
+
+    if (!indexExpression(source)) return false;
+
+    while (true) {
+        source.bookmark();
+
+        consumeWhitespace(source);
+        if (!consumeLiteral(source, ",")) {
+            source.rollback();
+            break;
+        }
+
+        if (!indexExpression(source)) {
+            source.rollback();
+            break;
+        }
+
+        source.commit();
+    }
+
+    return consumeLiteral(source, "]");
+}
+
+private bool indexExpression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return expression(source);
+}
 
 //array_value :
 //  value_designator
@@ -139,6 +280,22 @@ do {
 //selected_value :
 //  record_value '.' field_identifier
 //  ;
+// ***** PIM 4 Appendix 1 line 45 *****
+// new for LL(1)
+//designatorTail :
+//  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
+//  ;
+private bool selectedValue(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    consumeWhitespace(source);
+    if (!consumeLiteral(source, ".")) return false;
+
+    return fieldIdentifier(source);
+}
 
 //record_value :
 //  value_designator
@@ -149,6 +306,20 @@ do {
 //dereferenced_value :
 //  pointer_value '^'
 //  ;
+// ***** PIM 4 Appendix 1 line 45 *****
+// new for LL(1)
+//designatorTail :
+//  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
+//  ;
+private bool dereferencedValue(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    consumeWhitespace(source);
+    return consumeLiteral(source, "^");
+}
 
 //pointer_value :
 //  value_designator

@@ -41,6 +41,7 @@ do {
         source.commit();
     }
 
+    consumeWhitespace(source);
     return identifier(source);
 }
 

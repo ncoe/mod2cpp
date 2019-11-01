@@ -1,11 +1,25 @@
 module grammar.variable;
 
+import compiler.source;
+import compiler.util;
+import grammar.lex;
+import grammar.qualified;
+
 // 6 Variable Designator
 
 //variable_designator :
 //  entire_designator | indexed_designator | selected_designator |
 //  dereferenced_designator
 //  ;
+public bool variableDesignator(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    debugWrite(source, "End of Implementation");
+    assert(false, "todo finish this");
+}
 
 // 6.1 Entire Designator
 
@@ -39,6 +53,14 @@ module grammar.variable;
 //field_identifier :
 //  identifier
 //  ;
+public bool fieldIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return identifier(source);
+}
 
 // 6.4 Dereferenced Designator
 

@@ -6,6 +6,7 @@ import std.range;
 import compiler.source;
 import compiler.util;
 
+//todo split this into a keyword and into a symbol specialization
 public bool consumeLiteral(Source source, const string expected) nothrow
 in (source, "Why is the source null?")
 in (expected.length > 0, "The expected literal must have at least one character.")
