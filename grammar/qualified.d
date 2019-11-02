@@ -26,14 +26,12 @@ do {
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
         if (!moduleIdentifier(source)) {
             source.rollback();
             break;
         }
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ".")) {
+        if (!consumeSymbol(source, ".")) {
             source.rollback();
             break;
         }
@@ -41,8 +39,7 @@ do {
         source.commit();
     }
 
-    consumeWhitespace(source);
-    return identifier(source);
+    return cast(bool) identifier(source);
 }
 
 // 2.2 Definitions
@@ -91,10 +88,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "PROCEDURE")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "PROCEDURE")) return false;
     if (!procedureIdentifier(source)) return false;
 
     source.bookmark();
@@ -120,8 +114,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "(")) return false;
+    if (!consumeSymbol(source, "(")) return false;
 
     source.bookmark();
     if (formalParameterList(source)) {
@@ -130,7 +123,7 @@ do {
         source.rollback();
     }
 
-    return consumeLiteral(source, ")");
+    return consumeSymbol(source, ")");
 }
 
 //formal_parameter_list :
@@ -151,8 +144,7 @@ do {
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ";")) {
+        if (!consumeSymbol(source, ";")) {
             source.rollback();
             break;
         }
@@ -188,10 +180,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "PROCEDURE")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "PROCEDURE")) return false;
     if (!procedureIdentifier(source)) return false;
 
     source.bookmark();
@@ -201,10 +190,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ":")) return false;
-
-    consumeWhitespace(source);
+    if (!consumeSymbol(source, ":")) return false;
     return functionResultType(source);
 }
 
@@ -272,13 +258,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
     if (!identifierList(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ":")) return false;
-
-    consumeWhitespace(source);
+    if (!consumeSymbol(source, ":")) return false;
     return formalType(source);
 }
 
@@ -297,16 +278,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "VAR")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "VAR")) return false;
     if (!identifierList(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ":")) return false;
-
-    consumeWhitespace(source);
+    if (!consumeSymbol(source, ":")) return false;
     return formalType(source);
 }
 
@@ -356,10 +330,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-
     source.bookmark();
-    if (consumeLiteral(source, "CONST")) {
+    if (consumeKeyword(source, "CONST")) {
         source.commit();
 
         while (true) {
@@ -370,8 +342,7 @@ do {
                 break;
             }
 
-            consumeWhitespace(source);
-            if (!consumeLiteral(source, ";")) {
+            if (!consumeSymbol(source, ";")) {
                 source.rollback();
                 break;
             }
@@ -385,7 +356,7 @@ do {
     }
 
     source.bookmark();
-    if (consumeLiteral(source, "TYPE")) {
+    if (consumeKeyword(source, "TYPE")) {
         source.commit();
 
         while (true) {
@@ -396,8 +367,7 @@ do {
                 break;
             }
 
-            consumeWhitespace(source);
-            if (!consumeLiteral(source, ";")) {
+            if (!consumeSymbol(source, ";")) {
                 source.rollback();
                 break;
             }
@@ -411,7 +381,7 @@ do {
     }
 
     source.bookmark();
-    if (consumeLiteral(source, "VAR")) {
+    if (consumeKeyword(source, "VAR")) {
         source.commit();
 
         while (true) {
@@ -422,8 +392,7 @@ do {
                 break;
             }
 
-            consumeWhitespace(source);
-            if (!consumeLiteral(source, ";")) {
+            if (!consumeSymbol(source, ";")) {
                 source.rollback();
                 break;
             }
@@ -462,13 +431,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
     if (!identifier(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "=")) return false;
-
-    consumeWhitespace(source);
+    if (!consumeSymbol(source, "=")) return false;
     return constantExpression(source);
 }
 
@@ -503,10 +467,7 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!variableIdentifierList(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ":")) return false;
-
+    if (!consumeSymbol(source, ":")) return false;
     return typeDenoter(source);
 }
 
@@ -520,7 +481,6 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     bool lambda() {
-        consumeWhitespace(source);
         if (!identifier(source)) return false;
 
         source.bookmark();
@@ -538,8 +498,7 @@ do {
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!consumeSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -564,12 +523,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "[")) return false;
-
+    if (!consumeSymbol(source, "[")) return false;
     if (!valueOfAddressType(source)) return false;
-
-    return consumeLiteral(source, "]");
+    return consumeSymbol(source, "]");
 }
 
 //value_of_address_type :
@@ -631,13 +587,10 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!properProcedureHeading(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
+    if (!consumeSymbol(source, ";")) return false;
 
     source.bookmark();
-    consumeWhitespace(source);
-    if (consumeLiteral(source, "FORWARD")) {
+    if (consumeKeyword(source, "FORWARD")) {
         source.commit();
         return true;
     } else {
@@ -645,8 +598,6 @@ do {
     }
 
     if (!properProcedureBlock(source)) return false;
-
-    consumeWhitespace(source);
     return procedureIdentifier(source);
 }
 
@@ -659,7 +610,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return identifier(source);
+    return cast(bool) identifier(source);
 }
 
 // 2.8.1 Function Procedure Declaration
@@ -675,13 +626,10 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!functionProcedureHeading(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
+    if (!consumeSymbol(source, ";")) return false;
 
     source.bookmark();
-    consumeWhitespace(source);
-    if (consumeLiteral(source, "FORWARD")) {
+    if (consumeKeyword(source, "FORWARD")) {
         source.commit();
         return true;
     } else {
@@ -689,8 +637,6 @@ do {
     }
 
     if (!functionProcedureBlock(source)) return false;
-
-    consumeWhitespace(source);
     return procedureIdentifier(source);
 }
 
@@ -712,10 +658,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "MODULE")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
 
     source.bookmark();
@@ -725,9 +668,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
+    if (!consumeSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
 
     source.bookmark();
@@ -738,9 +679,5 @@ do {
     }
 
     if (!moduleBlock(source)) return false;
-
-    consumeWhitespace(source);
-    if (!moduleIdentifier(source)) return false;
-
-    return true;
+    return moduleIdentifier(source);
 }

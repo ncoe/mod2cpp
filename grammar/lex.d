@@ -6,13 +6,88 @@ import std.range;
 import compiler.source;
 import compiler.util;
 
-//todo split this into a keyword and into a symbol specialization
-public bool consumeLiteral(Source source, const string expected) nothrow
+public struct Identifier {
+    string name;
+
+    this(string name) nothrow {
+        this.name = name;
+    }
+
+    bool opCast(T)() if (is(T == bool)) {
+        return name.length > 0;
+    }
+}
+
+private Identifier withID(string name) nothrow
+in (name.length > 0, "An identifier must have at least one character.")
+do {
+    return Identifier(name);
+}
+
+private Identifier noID() nothrow {
+    return Identifier();
+}
+
+public bool consumeKeyword(Source source, const string expected) nothrow
 in (source, "Why is the source null?")
-in (expected.length > 0, "The expected literal must have at least one character.")
+in (expected.length > 0, "The expected symbol must have at least one character.")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
+
+    consumeWhitespace(source);
+    if (source.empty) return false;
+
+    source.bookmark();
+
+    string actual;
+    if (isLetter(source.front)) {
+        auto prev = source.previous();
+        if (isLetter(prev) || isDigit(prev)) {
+            // Should not match the keyword unless there is a boundery prior to beginning to parse.
+            debugWrite(source, "Keyword disallowed on non-boundaries.");
+
+            source.rollback();
+            return false;
+        }
+
+        actual ~= source.front;
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+
+    while (!source.empty && isLetter(source.front)) {
+        actual ~= source.front;
+        source.popFront();
+    }
+
+    if (expected == actual) {
+        // The end boundary is ambiguous
+        if (isDigit(source.front)) {
+            debugWrite(source, "Keyword disallowed on non-boundaries.");
+            source.rollback();
+            return false;
+        } else {
+            source.commit();
+            return true;
+        }
+    } else {
+        source.rollback();
+        return false;
+    }
+}
+
+public bool consumeSymbol(Source source, const string expected) nothrow
+in (source, "Why is the source null?")
+in (expected.length > 0, "The expected symbol must have at least one character.")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    consumeWhitespace(source);
+    if (source.empty) return false;
 
     source.bookmark();
 
@@ -44,7 +119,7 @@ do {
         || c == '\r';
 }
 
-public bool consumeWhitespace(Source source) nothrow
+private bool consumeWhitespace(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -91,21 +166,33 @@ do {
 //IDENTIFIER :
 //  LETTER ( LETTER | DIGIT )*
 //  ;
-public bool identifier(Source source) nothrow
+public Identifier identifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (source.empty) return false;
+    consumeWhitespace(source);
+    if (source.empty) return noID();
 
-    if (!isLetter(source.front)) return false;
+    string id;
+
+    auto prev = source.previous();
+    if (isLetter(prev) || isDigit(prev)) {
+        // Can't be a valid identifier unless there is a boundery prior to beginning to parse.
+        return noID();
+    }
+
+    if (!isLetter(source.front)) return noID();
+    id ~= source.front;
     source.popFront();
 
     while (!source.empty && (isLetter(source.front) || isDigit(source.front))) {
+        id ~= source.front;
         source.popFront();
     }
-    return true;
+
+    return withID(id);
 }
 
 //whole_number_literal :
@@ -127,6 +214,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
+    consumeWhitespace(source);
+
     // DIGIT ( HEX_DIGIT )* 'H'
     source.bookmark();
     if (isDigit(source.front)) {
@@ -136,7 +225,7 @@ do {
             source.popFront();
         }
 
-        if (consumeLiteral(source, "H")) {
+        if (consumeKeyword(source, "H")) {
             source.commit();
             return true;
         } else {
@@ -155,7 +244,7 @@ do {
             source.popFront();
         }
 
-        if (consumeLiteral(source, "B") || consumeLiteral(source, "C")) {
+        if (consumeKeyword(source, "B") || consumeKeyword(source, "C")) {
             source.commit();
             return true;
         } else {
@@ -218,12 +307,12 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (consumeLiteral(source, "'")) {
+    if (consumeSymbol(source, "'")) {
         while (isCharacter(source.front)) {
             source.popFront();
         }
 
-        if (consumeLiteral(source, "'")) {
+        if (consumeSymbol(source, "'")) {
             source.commit();
             return true;
         } else {
@@ -234,12 +323,12 @@ do {
     }
 
     source.bookmark();
-    if (consumeLiteral(source, "\"")) {
+    if (consumeSymbol(source, `"`)) {
         while (isCharacter(source.front)) {
             source.popFront();
         }
 
-        if (consumeLiteral(source, "\"")) {
+        if (consumeSymbol(source, `"`)) {
             source.commit();
             return true;
         } else {

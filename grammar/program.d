@@ -93,10 +93,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "MODULE")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
 
     source.bookmark();
@@ -106,20 +103,11 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
+    if (!consumeSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
-
     if (!moduleBlock(source)) return false;
-
-    consumeWhitespace(source);
     if (!moduleIdentifier(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ".")) return false;
-
-    return true;
+    return consumeSymbol(source, ".");
 }
 
 //module_identifier :
@@ -131,7 +119,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return identifier(source);
+    return cast(bool) identifier(source);
 }
 
 //protection :
@@ -147,13 +135,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "[")) return false;
-
+    if (!consumeSymbol(source, "[")) return false;
     if (!protectionExpression(source)) return false;
-
-    consumeWhitespace(source);
-    return consumeLiteral(source, "]");
+    return consumeSymbol(source, "]");
 }
 
 //protection_expression :
@@ -187,32 +171,17 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "DEFINITION")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "MODULE")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "DEFINITION")) return false;
+    if (!consumeKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
+    if (!consumeSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
 
     //todo definitions
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "END")) return false;
-
-    consumeWhitespace(source);
+    if (!consumeKeyword(source, "END")) return false;
     if (!moduleIdentifier(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ".")) return false;
-
-    return true;
+    return consumeSymbol(source, ".");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -232,13 +201,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "IMPLEMENTATION")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "MODULE")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "IMPLEMENTATION")) return false;
+    if (!consumeKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
 
     source.bookmark();
@@ -248,19 +212,11 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
+    if (!consumeSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
-
     if (!moduleBlock(source)) return false;
-
-    consumeWhitespace(source);
     if (!moduleIdentifier(source)) return false;
-
-    if (!consumeLiteral(source, ".")) return false;
-
-    return true;
+    return consumeSymbol(source, ".");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -337,10 +293,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "IMPORT")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "IMPORT")) return false;
 
     source.bookmark();
     if (identifierList(source)) {
@@ -349,7 +302,7 @@ do {
         source.rollback();
 
         source.bookmark();
-        if (consumeLiteral(source, "*")) {
+        if (consumeSymbol(source, "*")) {
             source.commit();
         } else {
             source.rollback();
@@ -357,10 +310,7 @@ do {
         }
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
-    return true;
+    return consumeSymbol(source, ";");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,16 +334,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "FROM")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "FROM")) return false;
     if (!moduleIdentifier(source)) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "IMPORT")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "IMPORT")) return false;
 
     source.bookmark();
     if (identifierList(source)) {
@@ -402,7 +345,7 @@ do {
         source.rollback();
 
         source.bookmark();
-        if (consumeLiteral(source, "*")) {
+        if (consumeSymbol(source, "*")) {
             source.commit();
         } else {
             source.rollback();
@@ -410,10 +353,7 @@ do {
         }
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
-    return true;
+    return consumeSymbol(source, ";");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -463,16 +403,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "EXPORT")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "EXPORT")) return false;
     if (!identifierList(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
-    return true;
+    return consumeSymbol(source, ";");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -487,17 +420,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "EXPORT")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "QUALIFIED")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (!consumeKeyword(source, "EXPORT")) return false;
+    if (!consumeKeyword(source, "QUALIFIED")) return false;
     if (!identifierList(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ";")) return false;
-
-    return true;
+    return consumeSymbol(source, ";");
 }

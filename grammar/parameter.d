@@ -22,8 +22,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "(")) return false;
+    if (!consumeSymbol(source, "(")) return false;
 
     source.bookmark();
     if (actualParameterList(source)) {
@@ -32,7 +31,7 @@ do {
         source.rollback();
     }
 
-    return consumeLiteral(source, ")");
+    return consumeSymbol(source, ")");
 }
 
 //actual_parameter_list :
@@ -53,8 +52,7 @@ do {
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!consumeSymbol(source, ",")) {
             source.rollback();
             break;
         }

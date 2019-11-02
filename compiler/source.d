@@ -59,6 +59,22 @@ public class Source {
 
     ///////////////////////////////////////////////////////
 
+    public ubyte previous() nothrow {
+        if (pos.currOffset > 0) {
+            return text[pos.currOffset - 1];
+        } else {
+            return 0;
+        }
+    }
+
+    public ubyte next() nothrow {
+        if (pos.currOffset + 1 < text.length) {
+            return text[pos.currOffset + 1];
+        } else {
+            return 0;
+        }
+    }
+
     public size_t offset() nothrow {
         return pos.currOffset;
     }

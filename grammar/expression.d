@@ -57,16 +57,15 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
+    if (consumeKeyword(source, "IN")) return true;
 
-    if (consumeLiteral(source, "IN")) return true;
-    if (consumeLiteral(source, "<>")) return true;
-    if (consumeLiteral(source, "<=")) return true;
-    if (consumeLiteral(source, ">=")) return true;
+    if (consumeSymbol(source, "<>")) return true;
+    if (consumeSymbol(source, "<=")) return true;
+    if (consumeSymbol(source, ">=")) return true;
 
-    if (consumeLiteral(source, "=")) return true;
-    if (consumeLiteral(source, "#")) return true;
-    if (consumeLiteral(source, "<")) return true;
+    if (consumeSymbol(source, "=")) return true;
+    if (consumeSymbol(source, "#")) return true;
+    if (consumeSymbol(source, "<")) return true;
 
     return false;
 }
@@ -85,12 +84,10 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
+    if (consumeKeyword(source, "OR")) return true;
 
-    if (consumeLiteral(source, "OR")) return true;
-
-    if (consumeLiteral(source, "+")) return true;
-    if (consumeLiteral(source, "-")) return true;
+    if (consumeSymbol(source, "+")) return true;
+    if (consumeSymbol(source, "-")) return true;
 
     return false;
 }
@@ -109,15 +106,13 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
+    if (consumeKeyword(source, "AND")) return true;
+    if (consumeKeyword(source, "DIV")) return true;
+    if (consumeKeyword(source, "MOD")) return true;
+    if (consumeKeyword(source, "REM")) return true;
 
-    if (consumeLiteral(source, "AND")) return true;
-    if (consumeLiteral(source, "DIV")) return true;
-    if (consumeLiteral(source, "MOD")) return true;
-    if (consumeLiteral(source, "REM")) return true;
-
-    if (consumeLiteral(source, "*")) return true;
-    if (consumeLiteral(source, "/")) return true;
+    if (consumeSymbol(source, "*")) return true;
+    if (consumeSymbol(source, "/")) return true;
 
     return false;
 }
@@ -161,14 +156,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    // alternatively:
-    //  indexed_value as '[' index_expression ( ',' index_expression )* ']'
-    //  dereferenced_value as '^'
-    //  selected_value
-
     bool lambda() {
-        consumeWhitespace(source);
-
         source.bookmark();
         if (indexedValue(source)) {
             source.commit();
@@ -237,16 +225,14 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "[")) return false;
+    if (!consumeSymbol(source, "[")) return false;
 
     if (!indexExpression(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!consumeSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -259,7 +245,7 @@ do {
         source.commit();
     }
 
-    return consumeLiteral(source, "]");
+    return consumeSymbol(source, "]");
 }
 
 private bool indexExpression(Source source) nothrow
@@ -291,9 +277,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ".")) return false;
-
+    if (!consumeSymbol(source, ".")) return false;
     return fieldIdentifier(source);
 }
 
@@ -317,8 +301,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "^");
+    return consumeSymbol(source, "^");
 }
 
 //pointer_value :
@@ -459,9 +442,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "+")) {
-        consumeLiteral(source, "-");
+    if (!consumeSymbol(source, "+")) {
+        consumeSymbol(source, "-");
     }
 
     if (!constTerm(source)) return false;
@@ -531,8 +513,6 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-
     // number
     if (wholeNumberLiteral(source)) return true;
 
@@ -541,10 +521,9 @@ do {
 
     // ( constExpression )
     source.bookmark();
-    if (consumeLiteral(source, "(")) {
+    if (consumeSymbol(source, "(")) {
         if (constantExpression(source)) {
-            consumeWhitespace(source);
-            if (consumeLiteral(source, ")")) {
+            if (consumeSymbol(source, ")")) {
                 source.commit();
             } else {
                 source.rollback();
@@ -558,7 +537,7 @@ do {
 
     // ( NOT | '~' {}) constFactor
     source.bookmark();
-    if (consumeLiteral(source, "NOT") || consumeLiteral(source, "~")) {
+    if (consumeKeyword(source, "NOT") || consumeSymbol(source, "~")) {
         source.commit();
         return constFactor(source);
     } else {
@@ -611,16 +590,14 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "{")) return false;
+    if (!consumeSymbol(source, "{")) return false;
 
     source.bookmark();
     if (element(source)) {
         while (true) {
             source.bookmark();
 
-            consumeWhitespace(source);
-            if (!consumeLiteral(source, ",")) {
+            if (!consumeSymbol(source, ",")) {
                 source.rollback();
                 break;
             }
@@ -638,8 +615,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "}");
+    return consumeSymbol(source, "}");
 }
 
 // ***** PIM 4 Appendix 1 line 22 *****
@@ -654,22 +630,13 @@ do {
 
     if (!constantExpression(source)) return false;
 
-    while (true) {
-        source.bookmark();
-
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, "..")) {
-            source.rollback();
-            break;
-        }
-
-        if (!constantExpression(source)) {
-            source.rollback();
-            break;
-        }
-
+    source.bookmark();
+    if (consumeSymbol(source, "..")) {
         source.commit();
+    } else {
+        source.rollback();
+        return true;
     }
 
-    return true;
+    return constantExpression(source);
 }

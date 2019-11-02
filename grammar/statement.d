@@ -184,8 +184,7 @@ do {
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ";")) {
+        if (!consumeSymbol(source, ";")) {
             source.rollback();
             break;
         }
@@ -211,8 +210,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, ";");
+    return consumeSymbol(source, ";");
 }
 
 // 5.3 Assigmment Statement
@@ -234,9 +232,7 @@ do {
 
     /* designator already handled */
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ":=")) return false;
-
+    if (!consumeSymbol(source, ":=")) return false;
     return expression(source);
 }
 
@@ -306,8 +302,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "RETURN");
+    return consumeKeyword(source, "RETURN");
 }
 
 // 5.5.3 Function Return Statement
@@ -321,9 +316,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "RETURN")) return false;
-
+    if (!consumeKeyword(source, "RETURN")) return false;
     return expression(source);
 }
 
@@ -338,8 +331,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "RETRY");
+    return consumeKeyword(source, "RETRY");
 }
 
 // 5.7 With Statement
@@ -353,8 +345,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "WITH")) return false;
+    if (!consumeKeyword(source, "WITH")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -384,8 +375,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "END");
+    return consumeKeyword(source, "END");
 }
 
 //guarded_statements :
@@ -398,8 +388,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "IF")) return false;
+    if (!consumeKeyword(source, "IF")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -414,9 +403,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "ELSE")) return false;
-
+    if (!consumeKeyword(source, "ELSE")) return false;
     return statementSequence(source);
 }
 
@@ -443,8 +430,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "CASE")) return false;
+    if (!consumeKeyword(source, "CASE")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -487,8 +473,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "WHILE")) return false;
+    if (!consumeKeyword(source, "WHILE")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -505,8 +490,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "REPEAT")) return false;
+    if (!consumeKeyword(source, "REPEAT")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -523,8 +507,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "LOOP")) return false;
+    if (!consumeKeyword(source, "LOOP")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -541,8 +524,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "EXIT");
+    return consumeKeyword(source, "EXIT");
 }
 
 // 5.14 For Statement
@@ -557,8 +539,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "FOR")) return false;
+    if (!consumeKeyword(source, "FOR")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");

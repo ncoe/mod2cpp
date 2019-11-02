@@ -55,7 +55,7 @@
   <transition_field>0</transition_field>
   <revert_import>0</revert_import>
   <preview_dtorfields>0</preview_dtorfields>
-  <transition_checkimports>1</transition_checkimports>
+  <transition_checkimports>0</transition_checkimports>
   <transition_complex>1</transition_complex>
   <preview_intpromote>0</preview_intpromote>
   <preview_fixAliasThis>0</preview_fixAliasThis>
@@ -176,7 +176,7 @@
   <transition_field>0</transition_field>
   <revert_import>0</revert_import>
   <preview_dtorfields>0</preview_dtorfields>
-  <transition_checkimports>1</transition_checkimports>
+  <transition_checkimports>0</transition_checkimports>
   <transition_complex>1</transition_complex>
   <preview_intpromote>0</preview_intpromote>
   <preview_fixAliasThis>0</preview_fixAliasThis>

@@ -33,8 +33,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, "END");
+    return consumeKeyword(source, "END");
 }
 
 //procedure_body :
@@ -46,9 +45,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "BEGIN")) return false;
-
+    if (!consumeKeyword(source, "BEGIN")) return false;
     return blockBody(source);
 }
 
@@ -69,11 +66,8 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!declarations(source)) return false;
-
     if (!functionBody(source)) return false;
-
-    consumeWhitespace(source);
-    return consumeLiteral(source, "END");
+    return consumeKeyword(source, "END");
 }
 
 //function_body :
@@ -85,9 +79,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "BEGIN")) return false;
-
+    if (!consumeKeyword(source, "BEGIN")) return false;
     return blockBody(source);
 }
 
@@ -116,10 +108,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "END")) return false;
-
-    return true;
+    return consumeKeyword(source, "END");
 }
 
 //module_body :
@@ -162,12 +151,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "BEGIN")) return false;
-
-    if (!blockBody(source)) return false;
-
-    return true;
+    if (!consumeKeyword(source, "BEGIN")) return false;
+    return blockBody(source);
 }
 
 //finalization_body :
@@ -179,12 +164,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "FINALLY")) return false;
-
-    if (!blockBody(source)) return false;
-
-    return true;
+    if (!consumeKeyword(source, "FINALLY")) return false;
+    return blockBody(source);
 }
 
 // 4.4 Block Bodies and Exception Handling
@@ -201,8 +182,7 @@ do {
     if (!normalPart(source)) return false;
 
     source.bookmark();
-    consumeWhitespace(source);
-    if (consumeLiteral(source, "EXCEPT")) {
+    if (consumeKeyword(source, "EXCEPT")) {
         if (exceptionalPart(source)) {
             source.commit();
         } else {

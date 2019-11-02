@@ -25,7 +25,6 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
     return typeIdentifier(source);
 }
 
@@ -181,13 +180,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "(")) return false;
-
+    if (!consumeSymbol(source, "(")) return false;
     if (!identifierList(source)) return false;
-
-    consumeWhitespace(source);
-    return consumeLiteral(source, ")");
+    return consumeSymbol(source, ")");
 }
 
 //identifier_list :
@@ -199,20 +194,17 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
     if (!identifier(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!consumeSymbol(source, ",")) {
             source.rollback();
             break;
         }
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!identifier(source)) {
             source.rollback();
             break;
         }
@@ -245,18 +237,11 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "[")) return false;
-
+    if (!consumeSymbol(source, "[")) return false;
     if (!constantExpression(source)) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "..")) return false;
-
+    if (!consumeSymbol(source, "..")) return false;
     if (!constantExpression(source)) return false;
-
-    consumeWhitespace(source);
-    return consumeLiteral(source, "]");
+    return consumeSymbol(source, "]");
 }
 
 //range_type :
@@ -286,12 +271,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "SET")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "OF")) return false;
-
+    if (!consumeKeyword(source, "SET")) return false;
+    if (!consumeKeyword(source, "OF")) return false;
     return baseType(source);
 }
 
@@ -318,12 +299,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "PACKEDSET")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "OF")) return false;
-
+    if (!consumeKeyword(source, "PACKEDSET")) return false;
+    if (!consumeKeyword(source, "OF")) return false;
     return baseType(source);
 }
 
@@ -342,12 +319,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "POINTER")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "TO")) return false;
-
+    if (!consumeKeyword(source, "POINTER")) return false;
+    if (!consumeKeyword(source, "TO")) return false;
     return boundType(source);
 }
 
@@ -399,11 +372,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "PROCEDURE")) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "(")) return false;
+    if (!consumeKeyword(source, "PROCEDURE")) return false;
+    if (!consumeSymbol(source, "(")) return false;
 
     source.bookmark();
     if (formalParamterTypeList(source)) {
@@ -412,8 +382,7 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    return consumeLiteral(source, ")");
+    return consumeSymbol(source, ")");
 
 }
 
@@ -427,11 +396,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "PROCEDURE")) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "(")) return false;
+    if (!consumeKeyword(source, "PROCEDURE")) return false;
+    if (!consumeSymbol(source, "(")) return false;
 
     source.bookmark();
     if (formalParamterTypeList(source)) {
@@ -440,12 +406,8 @@ do {
         source.rollback();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ")")) return false;
-
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, ":")) return false;
-
+    if (!consumeSymbol(source, ")")) return false;
+    if (!consumeSymbol(source, ":")) return false;
     return functionResultType(source);
 }
 
@@ -463,8 +425,7 @@ do {
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!consumeSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -509,10 +470,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (consumeLiteral(source, "VAR")) return false;
-
-    if (!consumeWhitespace(source)) return false;
+    if (consumeKeyword(source, "VAR")) return false;
     return formalType(source);
 }
 
@@ -563,36 +521,24 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "ARRAY")) return false;
-
-    if (!consumeWhitespace(source)) return false;
-    if (!consumeLiteral(source, "OF")) return false;
+    if (!consumeKeyword(source, "ARRAY")) return false;
+    if (!consumeKeyword(source, "OF")) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!consumeWhitespace(source)) {
+        if (!consumeKeyword(source, "ARRAY")) {
             source.rollback();
             break;
         }
-        if (!consumeLiteral(source, "ARRAY")) {
+        if (!consumeKeyword(source, "OF")) {
             source.rollback();
             break;
         }
 
-        if (!consumeWhitespace(source)) {
-            source.rollback();
-            break;
-        }
-        if (!consumeLiteral(source, "OF")) {
-            source.rollback();
-            break;
-        }
         source.commit();
     }
 
-    if (!consumeWhitespace(source)) return false;
     return typeIdentifier(source);
 }
 
@@ -611,16 +557,13 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "ARRAY")) return false;
-
+    if (!consumeKeyword(source, "ARRAY")) return false;
     if (!indexType(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        consumeWhitespace(source);
-        if (!consumeLiteral(source, ",")) {
+        if (!consumeSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -633,9 +576,7 @@ do {
         source.commit();
     }
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "OF")) return false;
-
+    if (!consumeKeyword(source, "OF")) return false;
     return componentType(source);
 }
 
@@ -678,8 +619,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    consumeWhitespace(source);
-    if (!consumeLiteral(source, "RECORD")) return false;
+    if (!consumeKeyword(source, "RECORD")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
