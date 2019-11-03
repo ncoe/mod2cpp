@@ -488,9 +488,9 @@
   <Folder name="reference">
    <File path="reference\g1.txt" />
    <File path="reference\g2.txt" />
-   <File path="reference\m2iso.g" />
-   <File path="reference\m2pim4_LL1.g" />
-   <File path="reference\objm2.g" />
+   <File path="reference\m2iso.g.txt" />
+   <File path="reference\m2pim4_LL1.g.txt" />
+   <File path="reference\objm2.g.txt" />
   </Folder>
   <Folder name="source">
    <Folder name="compiler">
@@ -510,5 +510,6 @@
    </Folder>
    <File path="mod2cpp.d" />
   </Folder>
+  <File path="README.md" />
  </Folder>
 </DProject>

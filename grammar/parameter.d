@@ -22,7 +22,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "(")) return false;
+    if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
     if (actualParameterList(source)) {
@@ -31,7 +31,7 @@ do {
         source.rollback();
     }
 
-    return consumeSymbol(source, ")");
+    return lexSymbol(source, ")");
 }
 
 //actual_parameter_list :
@@ -52,7 +52,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }

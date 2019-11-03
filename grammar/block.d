@@ -33,7 +33,7 @@ do {
         source.rollback();
     }
 
-    return consumeKeyword(source, "END");
+    return lexKeyword(source, "END");
 }
 
 //procedure_body :
@@ -45,7 +45,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "BEGIN")) return false;
+    if (!lexKeyword(source, "BEGIN")) return false;
     return blockBody(source);
 }
 
@@ -67,7 +67,7 @@ do {
 
     if (!declarations(source)) return false;
     if (!functionBody(source)) return false;
-    return consumeKeyword(source, "END");
+    return lexKeyword(source, "END");
 }
 
 //function_body :
@@ -79,7 +79,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "BEGIN")) return false;
+    if (!lexKeyword(source, "BEGIN")) return false;
     return blockBody(source);
 }
 
@@ -108,7 +108,7 @@ do {
         source.rollback();
     }
 
-    return consumeKeyword(source, "END");
+    return lexKeyword(source, "END");
 }
 
 //module_body :
@@ -151,7 +151,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "BEGIN")) return false;
+    if (!lexKeyword(source, "BEGIN")) return false;
     return blockBody(source);
 }
 
@@ -164,7 +164,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "FINALLY")) return false;
+    if (!lexKeyword(source, "FINALLY")) return false;
     return blockBody(source);
 }
 
@@ -182,7 +182,7 @@ do {
     if (!normalPart(source)) return false;
 
     source.bookmark();
-    if (consumeKeyword(source, "EXCEPT")) {
+    if (lexKeyword(source, "EXCEPT")) {
         if (exceptionalPart(source)) {
             source.commit();
         } else {

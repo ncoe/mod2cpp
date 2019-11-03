@@ -23,7 +23,7 @@ int parse(Source source) in {
     assert(source);
 } body {
     if (compilationUnit(source)) {
-        consumeTail(source); // there may be some whitespace left at the end of the program
+        lexProgramTail(source); // there may be some whitespace left at the end of the program
 
         writeln("---------------------------------------------");
         writeln("Source was successfully parsed.");

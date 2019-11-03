@@ -59,7 +59,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return cast(bool) identifier(source);
+    return cast(bool) lexIdentifier(source);
 }
 
 // 6.4 Dereferenced Designator

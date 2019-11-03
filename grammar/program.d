@@ -93,7 +93,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "MODULE")) return false;
+    if (!lexKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
 
     source.bookmark();
@@ -103,11 +103,11 @@ do {
         source.rollback();
     }
 
-    if (!consumeSymbol(source, ";")) return false;
+    if (!lexSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
     if (!moduleBlock(source)) return false;
     if (!moduleIdentifier(source)) return false;
-    return consumeSymbol(source, ".");
+    return lexSymbol(source, ".");
 }
 
 //module_identifier :
@@ -119,7 +119,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return cast(bool) identifier(source);
+    return cast(bool) lexIdentifier(source);
 }
 
 //protection :
@@ -135,9 +135,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "[")) return false;
+    if (!lexSymbol(source, "[")) return false;
     if (!protectionExpression(source)) return false;
-    return consumeSymbol(source, "]");
+    return lexSymbol(source, "]");
 }
 
 //protection_expression :
@@ -171,17 +171,17 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "DEFINITION")) return false;
-    if (!consumeKeyword(source, "MODULE")) return false;
+    if (!lexKeyword(source, "DEFINITION")) return false;
+    if (!lexKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
-    if (!consumeSymbol(source, ";")) return false;
+    if (!lexSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
 
     //todo definitions
 
-    if (!consumeKeyword(source, "END")) return false;
+    if (!lexKeyword(source, "END")) return false;
     if (!moduleIdentifier(source)) return false;
-    return consumeSymbol(source, ".");
+    return lexSymbol(source, ".");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -201,8 +201,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "IMPLEMENTATION")) return false;
-    if (!consumeKeyword(source, "MODULE")) return false;
+    if (!lexKeyword(source, "IMPLEMENTATION")) return false;
+    if (!lexKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
 
     source.bookmark();
@@ -212,11 +212,11 @@ do {
         source.rollback();
     }
 
-    if (!consumeSymbol(source, ";")) return false;
+    if (!lexSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
     if (!moduleBlock(source)) return false;
     if (!moduleIdentifier(source)) return false;
-    return consumeSymbol(source, ".");
+    return lexSymbol(source, ".");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -293,7 +293,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "IMPORT")) return false;
+    if (!lexKeyword(source, "IMPORT")) return false;
 
     source.bookmark();
     if (identifierList(source)) {
@@ -302,7 +302,7 @@ do {
         source.rollback();
 
         source.bookmark();
-        if (consumeSymbol(source, "*")) {
+        if (lexSymbol(source, "*")) {
             source.commit();
         } else {
             source.rollback();
@@ -310,7 +310,7 @@ do {
         }
     }
 
-    return consumeSymbol(source, ";");
+    return lexSymbol(source, ";");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -334,9 +334,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "FROM")) return false;
+    if (!lexKeyword(source, "FROM")) return false;
     if (!moduleIdentifier(source)) return false;
-    if (!consumeKeyword(source, "IMPORT")) return false;
+    if (!lexKeyword(source, "IMPORT")) return false;
 
     source.bookmark();
     if (identifierList(source)) {
@@ -345,7 +345,7 @@ do {
         source.rollback();
 
         source.bookmark();
-        if (consumeSymbol(source, "*")) {
+        if (lexSymbol(source, "*")) {
             source.commit();
         } else {
             source.rollback();
@@ -353,7 +353,7 @@ do {
         }
     }
 
-    return consumeSymbol(source, ";");
+    return lexSymbol(source, ";");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -403,9 +403,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "EXPORT")) return false;
+    if (!lexKeyword(source, "EXPORT")) return false;
     if (!identifierList(source)) return false;
-    return consumeSymbol(source, ";");
+    return lexSymbol(source, ";");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -420,8 +420,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "EXPORT")) return false;
-    if (!consumeKeyword(source, "QUALIFIED")) return false;
+    if (!lexKeyword(source, "EXPORT")) return false;
+    if (!lexKeyword(source, "QUALIFIED")) return false;
     if (!identifierList(source)) return false;
-    return consumeSymbol(source, ";");
+    return lexSymbol(source, ";");
 }

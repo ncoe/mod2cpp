@@ -184,7 +184,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ";")) {
+        if (!lexSymbol(source, ";")) {
             source.rollback();
             break;
         }
@@ -212,7 +212,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return consumeSymbol(source, ";");
+    return lexSymbol(source, ";");
 }
 
 // 5.3 Assigmment Statement
@@ -234,7 +234,7 @@ do {
 
     /* designator already handled */
 
-    if (!consumeSymbol(source, ":=")) return false;
+    if (!lexSymbol(source, ":=")) return false;
     return expression(source);
 }
 
@@ -304,7 +304,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return consumeKeyword(source, "RETURN");
+    return lexKeyword(source, "RETURN");
 }
 
 // 5.5.3 Function Return Statement
@@ -318,7 +318,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "RETURN")) return false;
+    if (!lexKeyword(source, "RETURN")) return false;
     return expression(source);
 }
 
@@ -333,7 +333,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return consumeKeyword(source, "RETRY");
+    return lexKeyword(source, "RETRY");
 }
 
 // 5.7 With Statement
@@ -347,7 +347,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "WITH")) return false;
+    if (!lexKeyword(source, "WITH")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -384,7 +384,7 @@ do {
         source.rollback();
     }
 
-    return consumeKeyword(source, "END");
+    return lexKeyword(source, "END");
 }
 
 //guarded_statements :
@@ -404,15 +404,15 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "IF")) return false;
+    if (!lexKeyword(source, "IF")) return false;
     if (!booleanExpression(source)) return false;
-    if (!consumeKeyword(source, "THEN")) return false;
+    if (!lexKeyword(source, "THEN")) return false;
     if (!statementSequence(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!consumeKeyword(source, "ELSIF")) {
+        if (!lexKeyword(source, "ELSIF")) {
             source.rollback();
             break;
         }
@@ -420,7 +420,7 @@ do {
             source.rollback();
             break;
         }
-        if (!consumeKeyword(source, "THEN")) {
+        if (!lexKeyword(source, "THEN")) {
             source.rollback();
             break;
         }
@@ -444,7 +444,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "ELSE")) return false;
+    if (!lexKeyword(source, "ELSE")) return false;
     return statementSequence(source);
 }
 
@@ -471,7 +471,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "CASE")) return false;
+    if (!lexKeyword(source, "CASE")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -514,7 +514,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "WHILE")) return false;
+    if (!lexKeyword(source, "WHILE")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -531,7 +531,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "REPEAT")) return false;
+    if (!lexKeyword(source, "REPEAT")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -548,7 +548,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "LOOP")) return false;
+    if (!lexKeyword(source, "LOOP")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");
@@ -565,7 +565,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return consumeKeyword(source, "EXIT");
+    return lexKeyword(source, "EXIT");
 }
 
 // 5.14 For Statement
@@ -585,24 +585,24 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "FOR")) return false;
+    if (!lexKeyword(source, "FOR")) return false;
     if (!controlVariableIdentifier(source)) return false;
-    if (!consumeSymbol(source, ":=")) return false;
+    if (!lexSymbol(source, ":=")) return false;
     if (!initialValue(source)) return false;
-    if (!consumeKeyword(source, "TO")) return false;
+    if (!lexKeyword(source, "TO")) return false;
     if (!finalValue(source)) return false;
 
     source.bookmark();
-    if (consumeKeyword(source, "BY")) {
+    if (lexKeyword(source, "BY")) {
         source.commit();
         if (!stepSize(source)) return false;
     } else {
         source.rollback();
     }
 
-    if (!consumeKeyword(source, "DO")) return false;
+    if (!lexKeyword(source, "DO")) return false;
     if (!statementSequence(source)) return false;
-    return consumeKeyword(source, "END");
+    return lexKeyword(source, "END");
 }
 
 //control_variable_identifier :
@@ -614,7 +614,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return cast(bool) identifier(source);
+    return cast(bool) lexIdentifier(source);
 }
 
 //initial_value :

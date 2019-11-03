@@ -49,9 +49,7 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (consumeSymbol(source, "+")) {
-        source.commit();
-    } else if (consumeSymbol(source, "-")) {
+    if (lexSymbol(source, "+") || lexSymbol(source, "-")) {
         source.commit();
     } else {
         source.rollback();
@@ -137,18 +135,18 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (number(source)) return true;
-    if (stringLiteral(source)) return true;
+    if (lexNumberLiteral(source)) return true;
+    if (lexStringLiteral(source)) return true;
 
-    if (consumeKeyword(source, "NOT") || consumeSymbol(source, "~")) {
+    if (lexKeyword(source, "NOT") || lexSymbol(source, "~")) {
         return factor(source);
     }
 
     source.bookmark();
-    if (consumeSymbol(source, "(")) {
+    if (lexSymbol(source, "(")) {
         if (expression(source)) {
             source.commit();
-            return consumeSymbol(source, ")");
+            return lexSymbol(source, ")");
         } else {
             source.rollback();
         }
@@ -229,7 +227,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -272,15 +270,15 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (consumeKeyword(source, "IN")) return true;
+    if (lexKeyword(source, "IN")) return true;
 
-    if (consumeSymbol(source, "<>")) return true;
-    if (consumeSymbol(source, "<=")) return true;
-    if (consumeSymbol(source, ">=")) return true;
+    if (lexSymbol(source, "<>")) return true;
+    if (lexSymbol(source, "<=")) return true;
+    if (lexSymbol(source, ">=")) return true;
 
-    if (consumeSymbol(source, "=")) return true;
-    if (consumeSymbol(source, "#")) return true;
-    if (consumeSymbol(source, "<")) return true;
+    if (lexSymbol(source, "=")) return true;
+    if (lexSymbol(source, "#")) return true;
+    if (lexSymbol(source, "<")) return true;
 
     return false;
 }
@@ -299,10 +297,10 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (consumeKeyword(source, "OR")) return true;
+    if (lexKeyword(source, "OR")) return true;
 
-    if (consumeSymbol(source, "+")) return true;
-    if (consumeSymbol(source, "-")) return true;
+    if (lexSymbol(source, "+")) return true;
+    if (lexSymbol(source, "-")) return true;
 
     return false;
 }
@@ -321,13 +319,13 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (consumeKeyword(source, "AND")) return true;
-    if (consumeKeyword(source, "DIV")) return true;
-    if (consumeKeyword(source, "MOD")) return true;
-    if (consumeKeyword(source, "REM")) return true;
+    if (lexKeyword(source, "AND")) return true;
+    if (lexKeyword(source, "DIV")) return true;
+    if (lexKeyword(source, "MOD")) return true;
+    if (lexKeyword(source, "REM")) return true;
 
-    if (consumeSymbol(source, "*")) return true;
-    if (consumeSymbol(source, "/")) return true;
+    if (lexSymbol(source, "*")) return true;
+    if (lexSymbol(source, "/")) return true;
 
     return false;
 }
@@ -440,14 +438,14 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "[")) return false;
+    if (!lexSymbol(source, "[")) return false;
 
     if (!indexExpression(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -460,7 +458,7 @@ do {
         source.commit();
     }
 
-    return consumeSymbol(source, "]");
+    return lexSymbol(source, "]");
 }
 
 private bool indexExpression(Source source) nothrow
@@ -492,7 +490,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, ".")) return false;
+    if (!lexSymbol(source, ".")) return false;
     return fieldIdentifier(source);
 }
 
@@ -516,7 +514,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return consumeSymbol(source, "^");
+    return lexSymbol(source, "^");
 }
 
 //pointer_value :
@@ -657,8 +655,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "+")) {
-        consumeSymbol(source, "-");
+    if (!lexSymbol(source, "+")) {
+        lexSymbol(source, "-");
     }
 
     if (!constTerm(source)) return false;
@@ -729,16 +727,16 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     // number
-    if (wholeNumberLiteral(source)) return true;
+    if (lexNumberLiteral(source)) return true;
 
     // string
-    if (stringLiteral(source)) return true;
+    if (lexStringLiteral(source)) return true;
 
     // ( constExpression )
     source.bookmark();
-    if (consumeSymbol(source, "(")) {
+    if (lexSymbol(source, "(")) {
         if (constantExpression(source)) {
-            if (consumeSymbol(source, ")")) {
+            if (lexSymbol(source, ")")) {
                 source.commit();
             } else {
                 source.rollback();
@@ -752,7 +750,7 @@ do {
 
     // ( NOT | '~' {}) constFactor
     source.bookmark();
-    if (consumeKeyword(source, "NOT") || consumeSymbol(source, "~")) {
+    if (lexKeyword(source, "NOT") || lexSymbol(source, "~")) {
         source.commit();
         return constFactor(source);
     } else {
@@ -805,14 +803,14 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "{")) return false;
+    if (!lexSymbol(source, "{")) return false;
 
     source.bookmark();
     if (element(source)) {
         while (true) {
             source.bookmark();
 
-            if (!consumeSymbol(source, ",")) {
+            if (!lexSymbol(source, ",")) {
                 source.rollback();
                 break;
             }
@@ -830,7 +828,7 @@ do {
         source.rollback();
     }
 
-    return consumeSymbol(source, "}");
+    return lexSymbol(source, "}");
 }
 
 // ***** PIM 4 Appendix 1 line 22 *****
@@ -846,7 +844,7 @@ do {
     if (!constantExpression(source)) return false;
 
     source.bookmark();
-    if (consumeSymbol(source, "..")) {
+    if (lexSymbol(source, "..")) {
         source.commit();
     } else {
         source.rollback();

@@ -180,9 +180,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "(")) return false;
+    if (!lexSymbol(source, "(")) return false;
     if (!identifierList(source)) return false;
-    return consumeSymbol(source, ")");
+    return lexSymbol(source, ")");
 }
 
 //identifier_list :
@@ -194,17 +194,17 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!identifier(source)) return false;
+    if (!lexIdentifier(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }
 
-        if (!identifier(source)) {
+        if (!lexIdentifier(source)) {
             source.rollback();
             break;
         }
@@ -237,11 +237,11 @@ do {
         source.rollback();
     }
 
-    if (!consumeSymbol(source, "[")) return false;
+    if (!lexSymbol(source, "[")) return false;
     if (!constantExpression(source)) return false;
-    if (!consumeSymbol(source, "..")) return false;
+    if (!lexSymbol(source, "..")) return false;
     if (!constantExpression(source)) return false;
-    return consumeSymbol(source, "]");
+    return lexSymbol(source, "]");
 }
 
 //range_type :
@@ -271,8 +271,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "SET")) return false;
-    if (!consumeKeyword(source, "OF")) return false;
+    if (!lexKeyword(source, "SET")) return false;
+    if (!lexKeyword(source, "OF")) return false;
     return baseType(source);
 }
 
@@ -299,8 +299,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "PACKEDSET")) return false;
-    if (!consumeKeyword(source, "OF")) return false;
+    if (!lexKeyword(source, "PACKEDSET")) return false;
+    if (!lexKeyword(source, "OF")) return false;
     return baseType(source);
 }
 
@@ -319,8 +319,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "POINTER")) return false;
-    if (!consumeKeyword(source, "TO")) return false;
+    if (!lexKeyword(source, "POINTER")) return false;
+    if (!lexKeyword(source, "TO")) return false;
     return boundType(source);
 }
 
@@ -372,8 +372,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "PROCEDURE")) return false;
-    if (!consumeSymbol(source, "(")) return false;
+    if (!lexKeyword(source, "PROCEDURE")) return false;
+    if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
     if (formalParamterTypeList(source)) {
@@ -382,7 +382,7 @@ do {
         source.rollback();
     }
 
-    return consumeSymbol(source, ")");
+    return lexSymbol(source, ")");
 
 }
 
@@ -396,8 +396,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "PROCEDURE")) return false;
-    if (!consumeSymbol(source, "(")) return false;
+    if (!lexKeyword(source, "PROCEDURE")) return false;
+    if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
     if (formalParamterTypeList(source)) {
@@ -406,8 +406,8 @@ do {
         source.rollback();
     }
 
-    if (!consumeSymbol(source, ")")) return false;
-    if (!consumeSymbol(source, ":")) return false;
+    if (!lexSymbol(source, ")")) return false;
+    if (!lexSymbol(source, ":")) return false;
     return functionResultType(source);
 }
 
@@ -425,7 +425,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -470,7 +470,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (consumeKeyword(source, "VAR")) return false;
+    if (lexKeyword(source, "VAR")) return false;
     return formalType(source);
 }
 
@@ -521,17 +521,17 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "ARRAY")) return false;
-    if (!consumeKeyword(source, "OF")) return false;
+    if (!lexKeyword(source, "ARRAY")) return false;
+    if (!lexKeyword(source, "OF")) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!consumeKeyword(source, "ARRAY")) {
+        if (!lexKeyword(source, "ARRAY")) {
             source.rollback();
             break;
         }
-        if (!consumeKeyword(source, "OF")) {
+        if (!lexKeyword(source, "OF")) {
             source.rollback();
             break;
         }
@@ -557,13 +557,13 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "ARRAY")) return false;
+    if (!lexKeyword(source, "ARRAY")) return false;
     if (!indexType(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -576,7 +576,7 @@ do {
         source.commit();
     }
 
-    if (!consumeKeyword(source, "OF")) return false;
+    if (!lexKeyword(source, "OF")) return false;
     return componentType(source);
 }
 
@@ -619,7 +619,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "RECORD")) return false;
+    if (!lexKeyword(source, "RECORD")) return false;
 
     debugWrite(source, "End of Implementation");
     assert(false, "todo finish this");

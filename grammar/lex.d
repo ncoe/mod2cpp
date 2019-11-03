@@ -6,6 +6,7 @@ import std.range;
 import compiler.source;
 import compiler.util;
 
+// todo consider replacing this with a class specialization
 public struct Identifier {
     string name;
 
@@ -28,7 +29,7 @@ private Identifier noID() nothrow {
     return Identifier();
 }
 
-public bool consumeKeyword(Source source, const string expected) nothrow
+public bool lexKeyword(Source source, const string expected) nothrow
 in (source, "Why is the source null?")
 in (expected.length > 0, "The expected symbol must have at least one character.")
 do {
@@ -79,7 +80,7 @@ do {
     }
 }
 
-public bool consumeSymbol(Source source, const string expected) nothrow
+public bool lexSymbol(Source source, const string expected) nothrow
 in (source, "Why is the source null?")
 in (expected.length > 0, "The expected symbol must have at least one character.")
 do {
@@ -121,7 +122,7 @@ do {
         || c == '(' && d == '*';
 }
 
-public void consumeTail(Source source) nothrow
+public void lexProgramTail(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     consumeWhitespace(source);
@@ -216,7 +217,7 @@ do {
 //IDENTIFIER :
 //  LETTER ( LETTER | DIGIT )*
 //  ;
-public Identifier identifier(Source source) nothrow
+public Identifier lexIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -281,14 +282,14 @@ private bool isKeyword(string value) nothrow {
 
 // ***** PIM 4 Appendix 1 line 2 *****
 // number : INTEGER | REAL ; // see lexer
-public bool number(Source source) nothrow
+public bool lexNumberLiteral(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (realLiteral(source)) return true;
-    return wholeNumberLiteral(source);
+    if (lexRealNumberLiteral(source)) return true;
+    return lexIntegerNumberLiteral(source);
 }
 
 //whole_number_literal :
@@ -304,7 +305,7 @@ do {
 //  OCTAL_DIGIT+  ( 'B' | 'C' {}) |
 //  DIGIT ( HEX_DIGIT )* 'H'
 //  ;
-public bool wholeNumberLiteral(Source source) nothrow
+public bool lexIntegerNumberLiteral(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -321,7 +322,7 @@ do {
             source.popFront();
         }
 
-        if (consumeKeyword(source, "H")) {
+        if (source.front == 'H') {
             source.commit();
             return true;
         } else {
@@ -340,7 +341,7 @@ do {
             source.popFront();
         }
 
-        if (consumeKeyword(source, "B") || consumeKeyword(source, "C")) {
+        if (source.front == 'B' || source.front == 'C') {
             source.commit();
             return true;
         } else {
@@ -373,7 +374,7 @@ do {
 //REAL :
 //  DIGIT+ '.' DIGIT* SCALE_FACTOR?
 //  ;
-public bool realLiteral(Source source) nothrow
+public bool lexRealNumberLiteral(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -431,19 +432,21 @@ do {
 //STRING :
 //  '\'' ( CHARACTER | '\"' )* '\'' | '"' (CHARACTER | '\'')* '"'
 //  ;
-public bool stringLiteral(Source source) nothrow
+public bool lexStringLiteral(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (consumeSymbol(source, "'")) {
+    if (source.front == '\'') {
+        source.popFront();
+
         while (isCharacter(source.front) || source.front == '"') {
             source.popFront();
         }
 
-        if (consumeSymbol(source, "'")) {
+        if (source.front == '\'') {
             source.commit();
             return true;
         } else {
@@ -454,12 +457,12 @@ do {
     }
 
     source.bookmark();
-    if (consumeSymbol(source, `"`)) {
+    if (source.front == '"') {
         while (isCharacter(source.front) || source.front == '\'') {
             source.popFront();
         }
 
-        if (consumeSymbol(source, `"`)) {
+        if (source.front == '"') {
             source.commit();
             return true;
         } else {

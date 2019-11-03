@@ -31,7 +31,7 @@ do {
             break;
         }
 
-        if (!consumeSymbol(source, ".")) {
+        if (!lexSymbol(source, ".")) {
             source.rollback();
             break;
         }
@@ -39,7 +39,7 @@ do {
         source.commit();
     }
 
-    return cast(bool) identifier(source);
+    return cast(bool) lexIdentifier(source);
 }
 
 // 2.2 Definitions
@@ -88,7 +88,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "PROCEDURE")) return false;
+    if (!lexKeyword(source, "PROCEDURE")) return false;
     if (!procedureIdentifier(source)) return false;
 
     source.bookmark();
@@ -114,7 +114,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "(")) return false;
+    if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
     if (formalParameterList(source)) {
@@ -123,7 +123,7 @@ do {
         source.rollback();
     }
 
-    return consumeSymbol(source, ")");
+    return lexSymbol(source, ")");
 }
 
 //formal_parameter_list :
@@ -144,7 +144,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ";")) {
+        if (!lexSymbol(source, ";")) {
             source.rollback();
             break;
         }
@@ -180,7 +180,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "PROCEDURE")) return false;
+    if (!lexKeyword(source, "PROCEDURE")) return false;
     if (!procedureIdentifier(source)) return false;
 
     source.bookmark();
@@ -190,7 +190,7 @@ do {
         source.rollback();
     }
 
-    if (!consumeSymbol(source, ":")) return false;
+    if (!lexSymbol(source, ":")) return false;
     return functionResultType(source);
 }
 
@@ -259,7 +259,7 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!identifierList(source)) return false;
-    if (!consumeSymbol(source, ":")) return false;
+    if (!lexSymbol(source, ":")) return false;
     return formalType(source);
 }
 
@@ -278,9 +278,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "VAR")) return false;
+    if (!lexKeyword(source, "VAR")) return false;
     if (!identifierList(source)) return false;
-    if (!consumeSymbol(source, ":")) return false;
+    if (!lexSymbol(source, ":")) return false;
     return formalType(source);
 }
 
@@ -331,7 +331,7 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (consumeKeyword(source, "CONST")) {
+    if (lexKeyword(source, "CONST")) {
         source.commit();
 
         while (true) {
@@ -342,7 +342,7 @@ do {
                 break;
             }
 
-            if (!consumeSymbol(source, ";")) {
+            if (!lexSymbol(source, ";")) {
                 source.rollback();
                 break;
             }
@@ -356,7 +356,7 @@ do {
     }
 
     source.bookmark();
-    if (consumeKeyword(source, "TYPE")) {
+    if (lexKeyword(source, "TYPE")) {
         source.commit();
 
         while (true) {
@@ -367,7 +367,7 @@ do {
                 break;
             }
 
-            if (!consumeSymbol(source, ";")) {
+            if (!lexSymbol(source, ";")) {
                 source.rollback();
                 break;
             }
@@ -381,7 +381,7 @@ do {
     }
 
     source.bookmark();
-    if (consumeKeyword(source, "VAR")) {
+    if (lexKeyword(source, "VAR")) {
         source.commit();
 
         while (true) {
@@ -392,7 +392,7 @@ do {
                 break;
             }
 
-            if (!consumeSymbol(source, ";")) {
+            if (!lexSymbol(source, ";")) {
                 source.rollback();
                 break;
             }
@@ -407,7 +407,7 @@ do {
 
     source.bookmark();
     if (procedureDeclaration(source)) {
-        if (consumeSymbol(source, ";")) {
+        if (lexSymbol(source, ";")) {
             source.commit();
             return true;
         } else {
@@ -436,8 +436,8 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!identifier(source)) return false;
-    if (!consumeSymbol(source, "=")) return false;
+    if (!lexIdentifier(source)) return false;
+    if (!lexSymbol(source, "=")) return false;
     return constantExpression(source);
 }
 
@@ -472,7 +472,7 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!variableIdentifierList(source)) return false;
-    if (!consumeSymbol(source, ":")) return false;
+    if (!lexSymbol(source, ":")) return false;
     return typeDenoter(source);
 }
 
@@ -486,7 +486,7 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     bool lambda() {
-        if (!identifier(source)) return false;
+        if (!lexIdentifier(source)) return false;
 
         source.bookmark();
         if (machineAddress(source)) {
@@ -503,7 +503,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!consumeSymbol(source, ",")) {
+        if (!lexSymbol(source, ",")) {
             source.rollback();
             break;
         }
@@ -528,9 +528,9 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeSymbol(source, "[")) return false;
+    if (!lexSymbol(source, "[")) return false;
     if (!valueOfAddressType(source)) return false;
-    return consumeSymbol(source, "]");
+    return lexSymbol(source, "]");
 }
 
 //value_of_address_type :
@@ -592,10 +592,10 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!properProcedureHeading(source)) return false;
-    if (!consumeSymbol(source, ";")) return false;
+    if (!lexSymbol(source, ";")) return false;
 
     source.bookmark();
-    if (consumeKeyword(source, "FORWARD")) {
+    if (lexKeyword(source, "FORWARD")) {
         source.commit();
         return true;
     } else {
@@ -615,7 +615,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return cast(bool) identifier(source);
+    return cast(bool) lexIdentifier(source);
 }
 
 // 2.8.1 Function Procedure Declaration
@@ -631,10 +631,10 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!functionProcedureHeading(source)) return false;
-    if (!consumeSymbol(source, ";")) return false;
+    if (!lexSymbol(source, ";")) return false;
 
     source.bookmark();
-    if (consumeKeyword(source, "FORWARD")) {
+    if (lexKeyword(source, "FORWARD")) {
         source.commit();
         return true;
     } else {
@@ -663,7 +663,7 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!consumeKeyword(source, "MODULE")) return false;
+    if (!lexKeyword(source, "MODULE")) return false;
     if (!moduleIdentifier(source)) return false;
 
     source.bookmark();
@@ -673,7 +673,7 @@ do {
         source.rollback();
     }
 
-    if (!consumeSymbol(source, ";")) return false;
+    if (!lexSymbol(source, ";")) return false;
     if (!importLists(source)) return false;
 
     source.bookmark();
