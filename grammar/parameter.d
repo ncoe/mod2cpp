@@ -16,7 +16,7 @@ import grammar.lex;
 //actualParameters :
 //  '(' expList? ')'
 //  ;
-public bool actualParameters(Source source) nothrow
+public bool parseActualParameters(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -25,7 +25,7 @@ do {
     if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
-    if (actualParameterList(source)) {
+    if (parseActualParameterList(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -41,13 +41,13 @@ do {
 //expList :
 //  expression ( ',' expression )*
 //  ;
-private bool actualParameterList(Source source) nothrow
+private bool parseActualParameterList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!expression(source)) return false;
+    if (!parseExpression(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -57,7 +57,7 @@ do {
             break;
         }
 
-        if (!expression(source)) {
+        if (!parseExpression(source)) {
             source.rollback();
             break;
         }

@@ -11,41 +11,41 @@ import grammar.qualified;
 //type_denoter :
 //  type_identifier | new_type
 //  ;
-public bool typeDenoter(Source source) nothrow
+public bool parseTypeDenoter(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (newType(source)) {
+    if (parseNewType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return typeIdentifier(source);
+    return parseTypeIdentifier(source);
 }
 
 //ordinal_type_denoter :
 //  ordinal_type_identifier | new_ordinal_type
 //  ;
-private bool ordinalTypeDenoter(Source source) nothrow
+private bool parseOrdinalTypeDenoter(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (newOrdinalType(source)) {
+    if (parseNewOrdinalType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return ordinalTypeIdentifier(source);
+    return parseOrdinalTypeIdentifier(source);
 }
 
 // 3.1 Type Identifier
@@ -53,25 +53,25 @@ do {
 //type_identifier :
 //  qualified_identifier 
 //  ;
-public bool typeIdentifier(Source source) nothrow
+public bool parseTypeIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return qualifiedIdentifier(source);
+    return parseQualifiedIdentifier(source);
 }
 
 //ordinal_type_identifier :
 //  type_identifier
 //  ;
-private bool ordinalTypeIdentifier(Source source) nothrow
+private bool parseOrdinalTypeIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return typeIdentifier(source);
+    return parseTypeIdentifier(source);
 }
 
 // 3.2 New Type
@@ -84,14 +84,14 @@ do {
 //type :
 //  simpleType | arrayType | recordType | setType | pointerType | procedureType
 //  ;
-private bool newType(Source source) nothrow
+private bool parseNewType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (arrayType(source)) {
+    if (parseArrayType(source)) {
         source.commit();
         return true;
     } else {
@@ -99,7 +99,7 @@ do {
     }
 
     source.bookmark();
-    if (packedsetType(source)) {
+    if (parsePackedsetType(source)) {
         source.commit();
         return true;
     } else {
@@ -107,7 +107,7 @@ do {
     }
 
     source.bookmark();
-    if (pointerType(source)) {
+    if (parsePointerType(source)) {
         source.commit();
         return true;
     } else {
@@ -115,7 +115,7 @@ do {
     }
 
     source.bookmark();
-    if (procedureType(source)) {
+    if (parseProcedureType(source)) {
         source.commit();
         return true;
     } else {
@@ -123,7 +123,7 @@ do {
     }
 
     source.bookmark();
-    if (recordType(source)) {
+    if (parseRecordType(source)) {
         source.commit();
         return true;
     } else {
@@ -131,14 +131,14 @@ do {
     }
 
     source.bookmark();
-    if (setType(source)) {
+    if (parseSetType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return newOrdinalType(source);
+    return parseNewOrdinalType(source);
 }
 
 //new_ordinal_type :
@@ -148,21 +148,21 @@ do {
 //simpleType :
 //  qualident | enumeration | subrangeType
 //  ;
-private bool newOrdinalType(Source source) nothrow
+private bool parseNewOrdinalType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (enumerationType(source)) {
+    if (parseEnumerationType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return subrangeType(source);
+    return parseSubrangeType(source);
 }
 
 // 3.2.1 Enumeration Type
@@ -174,21 +174,21 @@ do {
 //enumeration :
 //  '(' identList ')'
 //  ;
-private bool enumerationType(Source source) nothrow
+private bool parseEnumerationType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexSymbol(source, "(")) return false;
-    if (!identifierList(source)) return false;
+    if (!parseIdentifierList(source)) return false;
     return lexSymbol(source, ")");
 }
 
 //identifier_list :
 //  identifier ( ',' identifier )*
 //  ;
-public bool identifierList(Source source) nothrow
+public bool parseIdentifierList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -224,36 +224,36 @@ do {
 //subrangeType :
 //  '[' constExpression '..' constExpression ']'
 //  ;
-private bool subrangeType(Source source) nothrow
+private bool parseSubrangeType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (rangeType(source)) {
+    if (parseRangeType(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
     if (!lexSymbol(source, "[")) return false;
-    if (!constantExpression(source)) return false;
+    if (!parseConstantExpression(source)) return false;
     if (!lexSymbol(source, "..")) return false;
-    if (!constantExpression(source)) return false;
+    if (!parseConstantExpression(source)) return false;
     return lexSymbol(source, "]");
 }
 
 //range_type :
 //  ordinal_type_identifier
 //  ;
-private bool rangeType(Source source) nothrow
+private bool parseRangeType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return ordinalTypeIdentifier(source);
+    return parseOrdinalTypeIdentifier(source);
 }
 
 // 3.2.3 Set Type
@@ -265,7 +265,7 @@ do {
 //setType :
 //  SET OF simpleType
 //  ;
-private bool setType(Source source) nothrow
+private bool parseSetType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -273,19 +273,19 @@ do {
 
     if (!lexKeyword(source, "SET")) return false;
     if (!lexKeyword(source, "OF")) return false;
-    return baseType(source);
+    return parseBaseType(source);
 }
 
 //base_type :
 //  ordinal_type_denoter
 //  ;
-private bool baseType(Source source) nothrow
+private bool parseBaseType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return ordinalTypeDenoter(source);
+    return parseOrdinalTypeDenoter(source);
 }
 
 // 3.2.4 Packedset Type
@@ -293,7 +293,7 @@ do {
 //packedset_type :
 //  'PACKEDSET' 'OF' base_type
 //  ;
-private bool packedsetType(Source source) nothrow
+private bool parsePackedsetType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -301,7 +301,7 @@ do {
 
     if (!lexKeyword(source, "PACKEDSET")) return false;
     if (!lexKeyword(source, "OF")) return false;
-    return baseType(source);
+    return parseBaseType(source);
 }
 
 // 3.2.5 Pointer Type
@@ -313,7 +313,7 @@ do {
 //pointerType :
 //  POINTER TO type
 //  ;
-private bool pointerType(Source source) nothrow
+private bool parsePointerType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -321,19 +321,19 @@ do {
 
     if (!lexKeyword(source, "POINTER")) return false;
     if (!lexKeyword(source, "TO")) return false;
-    return boundType(source);
+    return parseBoundType(source);
 }
 
 //bound_type :
 //  type_denoter
 //  ;
-private bool boundType(Source source) nothrow
+private bool parseBoundType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return typeDenoter(source);
+    return parseTypeDenoter(source);
 }
 
 // 3.2.6 Procedure Type
@@ -345,28 +345,28 @@ do {
 //procedureType :
 //  PROCEDURE formalTypeList?
 //  ;
-private bool procedureType(Source source) nothrow
+private bool parseProcedureType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (functionPocedureType(source)) {
+    if (parseFunctionPocedureType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return properPocedureType(source);
+    return parseProperPocedureType(source);
 }
 
 //fragment
 //proper_procedure_type :
 //  'PROCEDURE' '(' ( formal_parameter_type_list )? ')'
 //  ;
-private bool properPocedureType(Source source) nothrow
+private bool parseProperPocedureType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -376,7 +376,7 @@ do {
     if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
-    if (formalParamterTypeList(source)) {
+    if (parseFormalParamterTypeList(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -390,7 +390,7 @@ do {
 //  'PROCEDURE' '(' ( formal_parameter_type_list )? ')'
 //  ':' function_result_type
 //  ;
-private bool functionPocedureType(Source source) nothrow
+private bool parseFunctionPocedureType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -400,7 +400,7 @@ do {
     if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
-    if (formalParamterTypeList(source)) {
+    if (parseFormalParamterTypeList(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -408,19 +408,19 @@ do {
 
     if (!lexSymbol(source, ")")) return false;
     if (!lexSymbol(source, ":")) return false;
-    return functionResultType(source);
+    return parseFunctionResultType(source);
 }
 
 //formal_parameter_type_list :
 //  formal_parameter_type ( ',' formal_parameter_type )*
 //  ;
-private bool formalParamterTypeList(Source source) nothrow
+private bool parseFormalParamterTypeList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!formalParamterType(source)) return false;
+    if (!parseFormalParamterType(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -430,7 +430,7 @@ do {
             break;
         }
 
-        if (!formalParamterType(source)) {
+        if (!parseFormalParamterType(source)) {
             source.rollback();
             break;
         }
@@ -444,46 +444,46 @@ do {
 //formal_parameter_type :
 //  variable_formal_type | value_formal_type
 //  ;
-private bool formalParamterType(Source source) nothrow
+private bool parseFormalParamterType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (variableFormalType(source)) {
+    if (parseVariableFormalType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return valueFormalType(source);
+    return parseValueFormalType(source);
 }
 
 //variable_formal_type :
 //  'VAR' formal_type
 //  ;
-private bool variableFormalType(Source source) nothrow
+private bool parseVariableFormalType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (lexKeyword(source, "VAR")) return false;
-    return formalType(source);
+    return parseFormalType(source);
 }
 
 //value_formal_type :
 //  formal_type
 //  ;
-private bool valueFormalType(Source source) nothrow
+private bool parseValueFormalType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return formalType(source);
+    return parseFormalType(source);
 }
 
 // 3.2.7 Formal Type
@@ -495,27 +495,27 @@ do {
 //formalType :
 //  ( ARRAY OF )? qualident
 //  ;
-public bool formalType(Source source) nothrow
+public bool parseFormalType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (openArrayFormalType(source)) {
+    if (parseOpenArrayFormalType(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return typeIdentifier(source);
+    return parseTypeIdentifier(source);
 }
 
 //open_array_formal_type :
 //  'ARRAY' 'OF' ( 'ARRAY' 'OF' )* type_identifier
 //  ;
-private bool openArrayFormalType(Source source) nothrow
+private bool parseOpenArrayFormalType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -539,7 +539,7 @@ do {
         source.commit();
     }
 
-    return typeIdentifier(source);
+    return parseTypeIdentifier(source);
 }
 
 // 3.2.8 Array Type
@@ -551,14 +551,14 @@ do {
 //arrayType :
 //  ARRAY simpleType ( ',' simpleType )* OF type
 //  ;
-private bool arrayType(Source source) nothrow
+private bool parseArrayType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "ARRAY")) return false;
-    if (!indexType(source)) return false;
+    if (!parseIndexType(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -568,7 +568,7 @@ do {
             break;
         }
 
-        if (!indexType(source)) {
+        if (!parseIndexType(source)) {
             source.rollback();
             break;
         }
@@ -577,31 +577,31 @@ do {
     }
 
     if (!lexKeyword(source, "OF")) return false;
-    return componentType(source);
+    return parseComponentType(source);
 }
 
 //index_type :
 //  ordinal_type_denoter
 //  ;
-private bool indexType(Source source) nothrow
+private bool parseIndexType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return ordinalTypeDenoter(source);
+    return parseOrdinalTypeDenoter(source);
 }
 
 //component_type :
 //  type_denoter
 //  ;
-private bool componentType(Source source) nothrow
+private bool parseComponentType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return typeDenoter(source);
+    return parseTypeDenoter(source);
 }
 
 // 3.2.9 Record Type
@@ -613,7 +613,7 @@ do {
 //recordType :
 //  RECORD fieldListSequence END
 //  ;
-private bool recordType(Source source) nothrow
+private bool parseRecordType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();

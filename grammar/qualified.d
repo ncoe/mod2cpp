@@ -17,7 +17,7 @@ import grammar.types;
 //qualident :
 //  ident ( '.' ident )*
 //  ;
-public bool qualifiedIdentifier(Source source) nothrow
+public bool parseQualifiedIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -26,7 +26,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!moduleIdentifier(source)) {
+        if (!parseModuleIdentifier(source)) {
             source.rollback();
             break;
         }
@@ -82,17 +82,17 @@ do {
 //procedureHeading :
 //  PROCEDURE ident formalParameters?
 //  ;
-private bool properProcedureHeading(Source source) nothrow
+private bool parseProperProcedureHeading(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "PROCEDURE")) return false;
-    if (!procedureIdentifier(source)) return false;
+    if (!parseProcedureIdentifier(source)) return false;
 
     source.bookmark();
-    if (formalParameters(source)) {
+    if (parseFormalParameters(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -108,7 +108,7 @@ do {
 //formalParameters :
 //'(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //;
-private bool formalParameters(Source source) nothrow
+private bool parseFormalParameters(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -117,7 +117,7 @@ do {
     if (!lexSymbol(source, "(")) return false;
 
     source.bookmark();
-    if (formalParameterList(source)) {
+    if (parseFormalParameterList(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -133,13 +133,13 @@ do {
 //formalParameters :
 //  '(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //  ;
-private bool formalParameterList(Source source) nothrow
+private bool parseFormalParameterList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!formalParameter(source)) return false;
+    if (!parseFormalParameter(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -149,7 +149,7 @@ do {
             break;
         }
 
-        if (!formalParameter(source)) {
+        if (!parseFormalParameter(source)) {
             source.rollback();
             break;
         }
@@ -174,24 +174,24 @@ do {
 //formalParameters :
 //'(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //;
-private bool functionProcedureHeading(Source source) nothrow
+private bool parseFunctionProcedureHeading(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "PROCEDURE")) return false;
-    if (!procedureIdentifier(source)) return false;
+    if (!parseProcedureIdentifier(source)) return false;
 
     source.bookmark();
-    if (formalParameters(source)) {
+    if (parseFormalParameters(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
     if (!lexSymbol(source, ":")) return false;
-    return functionResultType(source);
+    return parseFunctionResultType(source);
 }
 
 //function_result_type :
@@ -200,13 +200,13 @@ do {
 //formalParameters :
 //'(' ( fpSection ( ';' fpSection )* )? ')' ( ':' qualident )?
 //;
-public bool functionResultType(Source source) nothrow
+public bool parseFunctionResultType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return typeIdentifier(source);
+    return parseTypeIdentifier(source);
 }
 
 // 2.2.4 Formal Parameter
@@ -218,14 +218,14 @@ do {
 //fpSection :
 //  VAR? identList ':' formalType
 //  ;
-private bool formalParameter(Source source) nothrow
+private bool parseFormalParameter(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (variableParameterSpecification(source)) {
+    if (parseVariableParameterSpecification(source)) {
         source.commit();
         return true;
     } else {
@@ -233,7 +233,7 @@ do {
     }
 
     source.bookmark();
-    if (valueParameterSpecification(source)) {
+    if (parseValueParameterSpecification(source)) {
         source.commit();
         return true;
     } else {
@@ -252,15 +252,15 @@ do {
 //fpSection :
 //  VAR? identList ':' formalType
 //  ;
-private bool valueParameterSpecification(Source source) nothrow
+private bool parseValueParameterSpecification(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!identifierList(source)) return false;
+    if (!parseIdentifierList(source)) return false;
     if (!lexSymbol(source, ":")) return false;
-    return formalType(source);
+    return parseFormalType(source);
 }
 
 // 2.2.4.2 Variable Parameter
@@ -272,16 +272,16 @@ do {
 //fpSection :
 //  VAR? identList ':' formalType
 //  ;
-private bool variableParameterSpecification(Source source) nothrow
+private bool parseVariableParameterSpecification(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "VAR")) return false;
-    if (!identifierList(source)) return false;
+    if (!parseIdentifierList(source)) return false;
     if (!lexSymbol(source, ":")) return false;
-    return formalType(source);
+    return parseFormalType(source);
 }
 
 // 2.3 Declarations
@@ -289,7 +289,7 @@ do {
 //declarations :
 //  ( declaration )*
 //  ;
-public bool declarations(Source source) nothrow
+public bool parseDeclarations(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -298,7 +298,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (declaration(source)) {
+        if (parseDeclaration(source)) {
             source.commit();
         } else {
             source.rollback();
@@ -324,7 +324,7 @@ do {
 //  procedureDeclaration ';' |
 //  moduleDeclaration ';'
 //  ;
-private bool declaration(Source source) nothrow
+private bool parseDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -337,7 +337,7 @@ do {
         while (true) {
             source.bookmark();
 
-            if (!constantDeclaration(source)) {
+            if (!parseConstantDeclaration(source)) {
                 source.rollback();
                 break;
             }
@@ -362,7 +362,7 @@ do {
         while (true) {
             source.bookmark();
 
-            if (!typeDeclaration(source)) {
+            if (!parseTypeDeclaration(source)) {
                 source.rollback();
                 break;
             }
@@ -387,7 +387,7 @@ do {
         while (true) {
             source.bookmark();
 
-            if (!variableDeclaration(source)) {
+            if (!parseVariableDeclaration(source)) {
                 source.rollback();
                 break;
             }
@@ -406,7 +406,7 @@ do {
     }
 
     source.bookmark();
-    if (procedureDeclaration(source)) {
+    if (parseProcedureDeclaration(source)) {
         if (lexSymbol(source, ";")) {
             source.commit();
             return true;
@@ -418,7 +418,7 @@ do {
         source.rollback();
     }
 
-    return localModuleDeclaration(source);
+    return parseLocalModuleDeclaration(source);
 }
 
 // 2.4 Constant Declaration
@@ -430,7 +430,7 @@ do {
 //constantDeclaration :	
 //  ident '=' constExpression
 //  ;
-private bool constantDeclaration(Source source) nothrow
+private bool parseConstantDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -438,7 +438,7 @@ do {
 
     if (!lexIdentifier(source)) return false;
     if (!lexSymbol(source, "=")) return false;
-    return constantExpression(source);
+    return parseConstantExpression(source);
 }
 
 // 2.5 Type Declaration
@@ -446,7 +446,7 @@ do {
 //type_declaration :
 //  identifier '=' type_denoter
 //  ;
-private bool typeDeclaration(Source source) nothrow
+private bool parseTypeDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -465,21 +465,21 @@ do {
 //variableDeclaration :
 //  identList ':' type
 //  ;
-private bool variableDeclaration(Source source) nothrow
+private bool parseVariableDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!variableIdentifierList(source)) return false;
+    if (!parseVariableIdentifierList(source)) return false;
     if (!lexSymbol(source, ":")) return false;
-    return typeDenoter(source);
+    return parseTypeDenoter(source);
 }
 
 //variable_identifier_list :
 //  identifier ( machine_address )? ( ',' identifier ( machine_address )? )*
 //  ;
-private bool variableIdentifierList(Source source) nothrow
+private bool parseVariableIdentifierList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -489,7 +489,7 @@ do {
         if (!lexIdentifier(source)) return false;
 
         source.bookmark();
-        if (machineAddress(source)) {
+        if (parseMachineAddress(source)) {
             source.commit();
         } else {
             source.rollback();
@@ -522,27 +522,27 @@ do {
 //machine_address :
 //  '[' value_of_address_type ']'
 //  ;
-private bool machineAddress(Source source) nothrow
+private bool parseMachineAddress(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexSymbol(source, "[")) return false;
-    if (!valueOfAddressType(source)) return false;
+    if (!parseValueOfAddressType(source)) return false;
     return lexSymbol(source, "]");
 }
 
 //value_of_address_type :
 //  constant_expression
 //  ;
-private bool valueOfAddressType(Source source) nothrow
+private bool parseValueOfAddressType(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return constantExpression(source);
+    return parseConstantExpression(source);
 }
 
 // 2.7 Procedure Declaration
@@ -554,14 +554,14 @@ do {
 //procedureDeclaration :
 //  procedureHeading ';' block ident
 //  ;
-private bool procedureDeclaration(Source source) nothrow
+private bool parseProcedureDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (functionProcedureDeclaration(source)) {
+    if (parseFunctionProcedureDeclaration(source)) {
         source.commit();
         return true;
     } else {
@@ -569,7 +569,7 @@ do {
     }
 
     source.bookmark();
-    if (properProcedureDeclaration(source)) {
+    if (parseProperProcedureDeclaration(source)) {
         source.commit();
         return true;
     } else {
@@ -585,13 +585,13 @@ do {
 //  proper_procedure_heading ';'
 //  ( proper_procedure_block procedure_identifier | 'FORWARD' )
 //  ;
-private bool properProcedureDeclaration(Source source) nothrow
+private bool parseProperProcedureDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!properProcedureHeading(source)) return false;
+    if (!parseProperProcedureHeading(source)) return false;
     if (!lexSymbol(source, ";")) return false;
 
     source.bookmark();
@@ -602,14 +602,14 @@ do {
         source.rollback();
     }
 
-    if (!properProcedureBlock(source)) return false;
-    return procedureIdentifier(source);
+    if (!parseProperProcedureBlock(source)) return false;
+    return parseProcedureIdentifier(source);
 }
 
 //procedure_identifier :
 //  identifier
 //  ;
-private bool procedureIdentifier(Source source) nothrow
+private bool parseProcedureIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -624,13 +624,13 @@ do {
 //  function_procedure_heading ';'
 //  ( function_procedure_block procedure_identifier | 'FORWARD' )
 //  ;
-private bool functionProcedureDeclaration(Source source) nothrow
+private bool parseFunctionProcedureDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!functionProcedureHeading(source)) return false;
+    if (!parseFunctionProcedureHeading(source)) return false;
     if (!lexSymbol(source, ";")) return false;
 
     source.bookmark();
@@ -641,8 +641,8 @@ do {
         source.rollback();
     }
 
-    if (!functionProcedureBlock(source)) return false;
-    return procedureIdentifier(source);
+    if (!parseFunctionProcedureBlock(source)) return false;
+    return parseProcedureIdentifier(source);
 }
 
 // 2.9 Local Module Declaration
@@ -657,32 +657,32 @@ do {
 //  importList* exportList?
 //  block ident
 //  ;
-private bool localModuleDeclaration(Source source) nothrow
+private bool parseLocalModuleDeclaration(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "MODULE")) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
 
     source.bookmark();
-    if (protection(source)) {
+    if (parseProtection(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
     if (!lexSymbol(source, ";")) return false;
-    if (!importLists(source)) return false;
+    if (!parseImportLists(source)) return false;
 
     source.bookmark();
-    if (exportList(source)) {
+    if (parseExportList(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
-    if (!moduleBlock(source)) return false;
-    return moduleIdentifier(source);
+    if (!parseModuleBlock(source)) return false;
+    return parseModuleIdentifier(source);
 }

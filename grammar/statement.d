@@ -22,7 +22,7 @@ import grammar.parameter;
 //    whileStatement | repeatStatement | loopStatement | forStatement |
 //   withStatement | EXIT | RETURN expression? )?
 //  ;
-private bool statement(Source source) nothrow
+private bool parseStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -30,7 +30,7 @@ do {
 
     // (';') empty_statement
     source.bookmark();
-    if (emptyStatement(source)) {
+    if (parseEmptyStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -39,7 +39,7 @@ do {
 
     // ('EXIT') exit_statement
     source.bookmark();
-    if (exitStatement(source)) {
+    if (parseExitStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -48,7 +48,7 @@ do {
 
     // ('RETRY') retry_statement
     source.bookmark();
-    if (retryStatement(source)) {
+    if (parseRetryStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -57,7 +57,7 @@ do {
 
     // ('RETURN') return_statement
     source.bookmark();
-    if (returnStatement(source)) {
+    if (parseReturnStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -66,7 +66,7 @@ do {
 
     // ('WITH') with_statement
     source.bookmark();
-    if (withStatement(source)) {
+    if (parseWithStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -75,7 +75,7 @@ do {
 
     // ('IF') if_statement
     source.bookmark();
-    if (ifStatement(source)) {
+    if (parseIfStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -84,7 +84,7 @@ do {
 
     // ('CASE') case_statement
     source.bookmark();
-    if (caseStatement(source)) {
+    if (parseCaseStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -93,7 +93,7 @@ do {
 
     // ('WHILE') while_statement
     source.bookmark();
-    if (whileStatement(source)) {
+    if (parseWhileStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -102,7 +102,7 @@ do {
 
     // ('REPEAT') repeat_statement
     source.bookmark();
-    if (repeatStatement(source)) {
+    if (parseRepeatStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -111,7 +111,7 @@ do {
 
     // ('LOOP') loop_statement
     source.bookmark();
-    if (loopStatement(source)) {
+    if (parseLoopStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -120,7 +120,7 @@ do {
 
     // ('FOR') for_statement
     source.bookmark();
-    if (forStatement(source)) {
+    if (parseForStatement(source)) {
         source.commit();
         return true;
     } else {
@@ -129,7 +129,7 @@ do {
 
     // (variable_designator ':=' expression) assignment_statement
     // (procedure_designator ( actual_parameters )?) procedure_call
-    return assignmentOrProcedureCall(source);
+    return parseAssignmentOrProcedureCall(source);
 }
 
 // ***** PIM 4 Appendix 1 line 57 *****
@@ -139,23 +139,23 @@ do {
 //  designator /* has been factored out */
 //  ( ':=' expression | actualParameters? )
 //  ;
-private bool assignmentOrProcedureCall(Source source) nothrow
+private bool parseAssignmentOrProcedureCall(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!valueDesignator(source)) return false;
+    if (!parseValueDesignator(source)) return false;
 
     source.bookmark();
-    if (assignmentStatement(source)) {
+    if (parseAssignmentStatement(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
     source.bookmark();
-    if (actualParameters(source)) {
+    if (parseActualParameters(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -173,13 +173,13 @@ do {
 //statementSequence :
 //  statement ( ';' statement )*
 //  ;
-public bool statementSequence(Source source) nothrow
+public bool parseStatementSequence(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!statement(source)) return false;
+    if (!parseStatement(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -188,7 +188,7 @@ do {
             source.rollback();
             break;
         }
-        if (!statement(source)) {
+        if (!parseStatement(source)) {
             //NOTE: the empty statement does not handle the case where the last part of the sequence is the semicolon.
             //source.rollback();
             source.commit();
@@ -206,7 +206,7 @@ do {
 //empty_statement :
 //  ';'
 //  ;
-private bool emptyStatement(Source source) nothrow
+private bool parseEmptyStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -226,7 +226,7 @@ do {
 //  designator /* has been factored out */
 //  ( ':=' expression | actualParameters? )
 //  ;
-private bool assignmentStatement(Source source) nothrow
+private bool parseAssignmentStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -235,7 +235,7 @@ do {
     /* designator already handled */
 
     if (!lexSymbol(source, ":=")) return false;
-    return expression(source);
+    return parseExpression(source);
 }
 
 // 5.4 Procedure Call
@@ -249,7 +249,7 @@ do {
 //  designator /* has been factored out */
 //  ( ':=' expression | actualParameters? )
 //  ;
-private bool procedureCall(Source source) nothrow
+private bool parseProcedureCall(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -258,7 +258,7 @@ do {
     /* designator already handled */
 
     source.bookmark();
-    if (actualParameters(source)) {
+    if (parseActualParameters(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -276,21 +276,21 @@ do {
 //return_statement :
 //  simple_return_statement | function_return_statement
 //  ;
-private bool returnStatement(Source source) nothrow
+private bool parseReturnStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (functionReturnStatement(source)) {
+    if (parseFunctionReturnStatement(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return simpleReturnStatement(source);
+    return parseSimpleReturnStatement(source);
 }
 
 // 5.5.1 Simple Return Statement
@@ -298,7 +298,7 @@ do {
 //simple_return_statement :
 //  'RETURN'
 //  ;
-private bool simpleReturnStatement(Source source) nothrow
+private bool parseSimpleReturnStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -312,14 +312,14 @@ do {
 //function_return_statement :
 //  'RETURN' expression
 //  ;
-private bool functionReturnStatement(Source source) nothrow
+private bool parseFunctionReturnStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "RETURN")) return false;
-    return expression(source);
+    return parseExpression(source);
 }
 
 // 5.6 Retry Statement
@@ -327,7 +327,7 @@ do {
 //retry_statement :
 //  'RETRY'
 //  ;
-private bool retryStatement(Source source) nothrow
+private bool parseRetryStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -341,7 +341,7 @@ do {
 //with_statement :
 //  'WITH' record_designator 'DO' statement_sequence 'END'
 //  ;
-private bool withStatement(Source source) nothrow
+private bool parseWithStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -369,16 +369,16 @@ do {
 //  ( ELSE statementSequence )?
 //  END
 //  ;
-private bool ifStatement(Source source) nothrow
+private bool parseIfStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!guardedStatements(source)) return false;
+    if (!parseGuardedStatements(source)) return false;
 
     source.bookmark();
-    if (ifElsePart(source)) {
+    if (parseIfElsePart(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -398,16 +398,16 @@ do {
 //  ( ELSE statementSequence )?
 //  END
 //  ;
-private bool guardedStatements(Source source) nothrow
+private bool parseGuardedStatements(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "IF")) return false;
-    if (!booleanExpression(source)) return false;
+    if (!parseBooleanExpression(source)) return false;
     if (!lexKeyword(source, "THEN")) return false;
-    if (!statementSequence(source)) return false;
+    if (!parseStatementSequence(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -416,7 +416,7 @@ do {
             source.rollback();
             break;
         }
-        if (!booleanExpression(source)) {
+        if (!parseBooleanExpression(source)) {
             source.rollback();
             break;
         }
@@ -424,7 +424,7 @@ do {
             source.rollback();
             break;
         }
-        if (!statementSequence(source)) {
+        if (!parseStatementSequence(source)) {
             source.rollback();
             break;
         }
@@ -438,26 +438,26 @@ do {
 //if_else_part :
 //  'ELSE' statement_sequence
 //  ;
-private bool ifElsePart(Source source) nothrow
+private bool parseIfElsePart(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "ELSE")) return false;
-    return statementSequence(source);
+    return parseStatementSequence(source);
 }
 
 //boolean_expression :
 //  expression
 //  ;
-private bool booleanExpression(Source source) nothrow
+private bool parseBooleanExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return expression(source);
+    return parseExpression(source);
 }
 
 // 5.9 Case Statement
@@ -465,7 +465,7 @@ do {
 //case_statement :
 //  'CASE' case_selector 'OF' case_list 'END'
 //  ;
-private bool caseStatement(Source source) nothrow
+private bool parseCaseStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -508,7 +508,7 @@ do {
 //while_statement :
 //  'WHILE' boolean_expression 'DO' statement_sequence 'END'
 //  ;
-private bool whileStatement(Source source) nothrow
+private bool parseWhileStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -525,7 +525,7 @@ do {
 //repeat_statement :
 //  'REPEAT' statement_sequence 'UNTIL' boolean_expression
 //  ;
-private bool repeatStatement(Source source) nothrow
+private bool parseRepeatStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -542,7 +542,7 @@ do {
 //loop_statement :
 //  'LOOP' statement_sequence 'END'
 //  ;
-private bool loopStatement(Source source) nothrow
+private bool parseLoopStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -559,7 +559,7 @@ do {
 //exit_statement :
 //  'EXIT'
 //  ;
-private bool exitStatement(Source source) nothrow
+private bool parseExitStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -579,36 +579,36 @@ do {
 //  FOR ident ':=' expression TO expression ( BY constExpression )?
 //  DO statementSequence END
 //  ;
-private bool forStatement(Source source) nothrow
+private bool parseForStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "FOR")) return false;
-    if (!controlVariableIdentifier(source)) return false;
+    if (!parseControlVariableIdentifier(source)) return false;
     if (!lexSymbol(source, ":=")) return false;
-    if (!initialValue(source)) return false;
+    if (!parseInitialValue(source)) return false;
     if (!lexKeyword(source, "TO")) return false;
-    if (!finalValue(source)) return false;
+    if (!parseFinalValue(source)) return false;
 
     source.bookmark();
     if (lexKeyword(source, "BY")) {
         source.commit();
-        if (!stepSize(source)) return false;
+        if (!parseStepSize(source)) return false;
     } else {
         source.rollback();
     }
 
     if (!lexKeyword(source, "DO")) return false;
-    if (!statementSequence(source)) return false;
+    if (!parseStatementSequence(source)) return false;
     return lexKeyword(source, "END");
 }
 
 //control_variable_identifier :
 //  identifier
 //  ;
-private bool controlVariableIdentifier(Source source) nothrow
+private bool parseControlVariableIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -620,35 +620,35 @@ do {
 //initial_value :
 //  ordinal_expression
 //  ;
-private bool initialValue(Source source) nothrow
+private bool parseInitialValue(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return ordinalExpression(source);
+    return parseOrdinalExpression(source);
 }
 
 //final_value :
 //  ordinal_expression
 //  ;
-private bool finalValue(Source source) nothrow
+private bool parseFinalValue(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return ordinalExpression(source);
+    return parseOrdinalExpression(source);
 }
 
 //step_size :
 //  constant_expression
 //  ;
-private bool stepSize(Source source) nothrow
+private bool parseStepSize(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return constantExpression(source);
+    return parseConstantExpression(source);
 }

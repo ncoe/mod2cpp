@@ -397,6 +397,11 @@ do {
     // '.'
     if (source.front == '.') {
         source.popFront();
+        if (source.front == '.') {
+            // Not a real number, because the symbol is ".." not just "." as required
+            source.rollback();
+            return false;
+        }
     } else {
         source.rollback();
         return false;
@@ -406,16 +411,16 @@ do {
     while (isDigit(source.front)) {
         source.popFront();
     }
-    source.commit();
 
     //SCALE_FACTOR?
     source.bookmark();
-    if (scaleFactor(source)) {
+    if (lexScaleFactor(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
+    source.commit();
     return true;
 }
 
@@ -447,6 +452,8 @@ do {
         }
 
         if (source.front == '\'') {
+            source.popFront();
+
             source.commit();
             return true;
         } else {
@@ -463,6 +470,8 @@ do {
         }
 
         if (source.front == '"') {
+            source.popFront();
+
             source.commit();
             return true;
         } else {
@@ -534,14 +543,50 @@ private bool isHexDigit(ubyte u) nothrow {
 //SCALE_FACTOR :
 //  'E' ( '+' | '-' {})? DIGIT+
 //  ;
-private bool scaleFactor(Source source) nothrow
+private bool lexScaleFactor(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    debugWrite(source, "End of Implementation");
-    assert(false, "todo finish this");
+    source.bookmark();
+
+    //'E'
+    if (source.front == 'E') {
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+
+    //('+' | '-')?
+    if (source.front == '+' || source.front == '-') {
+        source.popFront();
+    }
+
+    //DIGIT
+    if (isDigit(source.front)) {
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+
+    //DIGIT*
+    while (true) {
+        source.bookmark();
+
+        if (isDigit(source.front)) {
+            source.popFront();
+        } else {
+            break;
+        }
+
+        source.commit();
+    }
+
+    source.commit();
+    return true;
 }
 
 //fragment

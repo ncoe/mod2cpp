@@ -16,18 +16,18 @@ import grammar.variable;
 //expression :
 //  simpleExpression ( relation simpleExpression )?
 //  ;
-public bool expression(Source source) nothrow
+public bool parseExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!simpleExpression(source)) return false;
+    if (!parseSimpleExpression(source)) return false;
 
     source.bookmark();
-    if (relationalOperator(source)) {
+    if (parseRelationalOperator(source)) {
         source.commit();
-        return simpleExpression(source);
+        return parseSimpleExpression(source);
     } else {
         source.rollback();
     }
@@ -42,7 +42,7 @@ do {
 //simpleExpression :
 //  ( '+' | '-' {})? term ( addOperator term )*
 //  ;
-private bool simpleExpression(Source source) nothrow
+private bool parseSimpleExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -55,17 +55,17 @@ do {
         source.rollback();
     }
 
-    if (!term(source)) return false;
+    if (!parseTerm(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!addOperator(source)) {
+        if (!parseAddOperator(source)) {
             source.rollback();
             break;
         }
 
-        if (!term(source)) {
+        if (!parseTerm(source)) {
             source.rollback();
             break;
         }
@@ -83,23 +83,23 @@ do {
 //term :
 //  factor ( mulOperator factor )*
 //  ;
-private bool term(Source source) nothrow
+private bool parseTerm(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!factor(source)) return false;
+    if (!parseFactor(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!mulOperator(source)) {
+        if (!parseMulOperator(source)) {
             source.rollback();
             break;
         }
 
-        if (!factor(source)) {
+        if (!parseFactor(source)) {
             source.rollback();
             break;
         }
@@ -129,7 +129,7 @@ do {
 //  setOrDesignatorOrProcCall |
 //  '(' expression ')' | ( NOT | '~' {}) factor
 //  ;
-private bool factor(Source source) nothrow
+private bool parseFactor(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -139,12 +139,12 @@ do {
     if (lexStringLiteral(source)) return true;
 
     if (lexKeyword(source, "NOT") || lexSymbol(source, "~")) {
-        return factor(source);
+        return parseFactor(source);
     }
 
     source.bookmark();
     if (lexSymbol(source, "(")) {
-        if (expression(source)) {
+        if (parseExpression(source)) {
             source.commit();
             return lexSymbol(source, ")");
         } else {
@@ -154,7 +154,7 @@ do {
         source.rollback();
     }
 
-    return setOrDesignatorOrProcCall(source);
+    return parseSetOrDesignatorOrProcCall(source);
 }
 
 // ***** PIM 4 Appendix 1 lines 50-51 *****
@@ -164,7 +164,7 @@ do {
 //  qualident /* <= factored out */
 //  ( set | designatorTail? actualParameters? )
 //;
-private bool setOrDesignatorOrProcCall(Source source) nothrow
+private bool parseSetOrDesignatorOrProcCall(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -172,7 +172,7 @@ do {
 
     //set |
     source.bookmark();
-    if (set(source)) {
+    if (parseSet(source)) {
         source.commit();
         return true;
     } else {
@@ -180,11 +180,11 @@ do {
     }
 
     //qualident
-    if (!qualifiedIdentifier(source)) return false;
+    if (!parseQualifiedIdentifier(source)) return false;
 
     // set |
     source.bookmark();
-    if (set(source)) {
+    if (parseSet(source)) {
         source.commit();
         return true;
     } else {
@@ -193,7 +193,7 @@ do {
 
     //designatorTail?
     source.bookmark();
-    if (designatorTail(source)) {
+    if (parseDesignatorTail(source)) {
         source.commit();
         return true;
     } else {
@@ -202,7 +202,7 @@ do {
 
     //actualParameters?
     source.bookmark();
-    if (actualParameters(source)) {
+    if (parseActualParameters(source)) {
         source.commit();
         return true;
     } else {
@@ -216,13 +216,13 @@ do {
 //expList :
 //  expression ( ',' expression )*
 //  ;
-private bool expressionList(Source source) nothrow
+private bool parseExpressionList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!expression(source)) return false;
+    if (!parseExpression(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -232,7 +232,7 @@ do {
             break;
         }
 
-        if (!expression(source)) {
+        if (!parseExpression(source)) {
             source.rollback();
             break;
         }
@@ -246,13 +246,13 @@ do {
 //ordinal_expression :
 //  expression
 //  ;
-public bool ordinalExpression(Source source) nothrow
+public bool parseOrdinalExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return expression(source);
+    return parseExpression(source);
 }
 
 // 7.1 Infix Expressions
@@ -264,7 +264,7 @@ do {
 //relation :
 //  '=' | '#' | '<>' | '<' | '<=' | '>' | '>=' | 'IN' {}
 //  ;
-private bool relationalOperator(Source source) nothrow
+private bool parseRelationalOperator(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -291,7 +291,7 @@ do {
 //  '+' | '-' | OR
 //  {} // make ANTLRworks display separate branches
 //  ;
-private bool addOperator(Source source) nothrow
+private bool parseAddOperator(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -313,7 +313,7 @@ do {
 //  '*' | '/' | DIV | MOD | AND | '&'
 //  {} // make ANTLRworks display separate branches
 //  ;
-private bool mulOperator(Source source) nothrow
+private bool parseMulOperator(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -340,16 +340,16 @@ do {
 //designator :
 //  qualident ( designatorTail )?
 //  ;
-public bool valueDesignator(Source source) nothrow
+public bool parseValueDesignator(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!qualifiedIdentifier(source)) return false;
+    if (!parseQualifiedIdentifier(source)) return false;
 
     source.bookmark();
-    if (designatorTail(source)) {
+    if (parseDesignatorTail(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -363,7 +363,7 @@ do {
 //designatorTail :
 //  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
 //  ;
-private bool designatorTail(Source source) nothrow
+private bool parseDesignatorTail(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -371,12 +371,12 @@ do {
 
     bool lambda() {
         source.bookmark();
-        if (indexedValue(source)) {
+        if (parseIndexedValue(source)) {
             source.commit();
         } else {
             source.rollback();
 
-            if (!dereferencedValue(source)) {
+            if (!parseDereferencedValue(source)) {
                 return false;
             }
         }
@@ -384,7 +384,7 @@ do {
         while (true) {
             source.bookmark();
 
-            if (!selectedValue(source)) {
+            if (!parseSelectedValue(source)) {
                 source.rollback();
                 break;
             }
@@ -432,7 +432,7 @@ do {
 //designatorTail :
 //  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
 //  ;
-private bool indexedValue(Source source) nothrow
+private bool parseIndexedValue(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -440,7 +440,7 @@ do {
 
     if (!lexSymbol(source, "[")) return false;
 
-    if (!indexExpression(source)) return false;
+    if (!parseIndexExpression(source)) return false;
 
     while (true) {
         source.bookmark();
@@ -450,7 +450,7 @@ do {
             break;
         }
 
-        if (!indexExpression(source)) {
+        if (!parseIndexExpression(source)) {
             source.rollback();
             break;
         }
@@ -461,13 +461,13 @@ do {
     return lexSymbol(source, "]");
 }
 
-private bool indexExpression(Source source) nothrow
+private bool parseIndexExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return expression(source);
+    return parseExpression(source);
 }
 
 //array_value :
@@ -484,14 +484,14 @@ do {
 //designatorTail :
 //  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
 //  ;
-private bool selectedValue(Source source) nothrow
+private bool parseSelectedValue(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexSymbol(source, ".")) return false;
-    return fieldIdentifier(source);
+    return parseFieldIdentifier(source);
 }
 
 //record_value :
@@ -508,7 +508,7 @@ do {
 //designatorTail :
 //  ( ( '[' expList ']' | '^' ) ( '.' ident )* )+
 //  ;
-private bool dereferencedValue(Source source) nothrow
+private bool parseDereferencedValue(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -618,23 +618,23 @@ do {
 //constExpression :
 //  simpleConstExpr ( relation simpleConstExpr )?
 //  ;
-public bool constantExpression(Source source) nothrow
+public bool parseConstantExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!simpleConstExpression(source)) return false;
+    if (!parseSimpleConstExpression(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!relationalOperator(source)) {
+        if (!parseRelationalOperator(source)) {
             source.rollback();
             break;
         }
 
-        if (!simpleConstExpression(source)) {
+        if (!parseSimpleConstExpression(source)) {
             source.rollback();
             break;
         }
@@ -649,7 +649,7 @@ do {
 //simpleConstExpr :
 //  ( '+' | '-' {})? constTerm ( addOperator constTerm )*
 //  ;
-private bool simpleConstExpression(Source source) nothrow
+private bool parseSimpleConstExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -659,17 +659,17 @@ do {
         lexSymbol(source, "-");
     }
 
-    if (!constTerm(source)) return false;
+    if (!parseConstTerm(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!addOperator(source)) {
+        if (!parseAddOperator(source)) {
             source.rollback();
             break;
         }
 
-        if (!constTerm(source)) {
+        if (!parseConstTerm(source)) {
             source.rollback();
             break;
         }
@@ -684,23 +684,23 @@ do {
 //constTerm :
 //  constFactor ( mulOperator constFactor )*
 //  ;
-private bool constTerm(Source source) nothrow
+private bool parseConstTerm(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!constFactor(source)) return false;
+    if (!parseConstFactor(source)) return false;
 
     while (true) {
         source.bookmark();
 
-        if (!mulOperator(source)) {
+        if (!parseMulOperator(source)) {
             source.rollback();
             break;
         }
 
-        if (!constFactor(source)) {
+        if (!parseConstFactor(source)) {
             source.rollback();
             break;
         }
@@ -720,7 +720,7 @@ do {
 //  number | string | setOrQualident |
 //  '(' constExpression ')' | ( NOT | '~' {}) constFactor
 //  ;
-private bool constFactor(Source source) nothrow
+private bool parseConstFactor(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -735,7 +735,7 @@ do {
     // ( constExpression )
     source.bookmark();
     if (lexSymbol(source, "(")) {
-        if (constantExpression(source)) {
+        if (parseConstantExpression(source)) {
             if (lexSymbol(source, ")")) {
                 source.commit();
             } else {
@@ -752,13 +752,13 @@ do {
     source.bookmark();
     if (lexKeyword(source, "NOT") || lexSymbol(source, "~")) {
         source.commit();
-        return constFactor(source);
+        return parseConstFactor(source);
     } else {
         source.rollback();
     }
 
     // setOrQualident
-    return setOrQualident(source);
+    return parseSetOrQualident(source);
 }
 
 // ***** PIM 4 Appendix 1 lines 19-20 *****
@@ -766,7 +766,7 @@ do {
 //setOrQualident :
 //  set | qualident set?
 //  ;
-private bool setOrQualident(Source source) nothrow
+private bool parseSetOrQualident(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -774,9 +774,9 @@ do {
 
     // qualident set?
     source.bookmark();
-    if (qualifiedIdentifier(source)) {
+    if (parseQualifiedIdentifier(source)) {
         source.bookmark();
-        if (set(source)) {
+        if (parseSet(source)) {
             source.commit();
         } else {
             source.rollback();
@@ -788,7 +788,7 @@ do {
         source.rollback();
     }
 
-    return set(source);
+    return parseSet(source);
 }
 
 // ***** PIM 4 Appendix 1 line 21 *****
@@ -797,7 +797,7 @@ do {
 //  /* qualident has been factored out */
 //  '{' ( element ( ',' element )* )? '}'
 //  ;
-private bool set(Source source) nothrow
+private bool parseSet(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -806,7 +806,7 @@ do {
     if (!lexSymbol(source, "{")) return false;
 
     source.bookmark();
-    if (element(source)) {
+    if (parseElement(source)) {
         while (true) {
             source.bookmark();
 
@@ -815,7 +815,7 @@ do {
                 break;
             }
 
-            if (!element(source)) {
+            if (!parseElement(source)) {
                 source.rollback();
                 break;
             }
@@ -835,13 +835,13 @@ do {
 //element :
 //  constExpression ( '..' constExpression )?
 //  ;
-private bool element(Source source) nothrow
+private bool parseElement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!constantExpression(source)) return false;
+    if (!parseConstantExpression(source)) return false;
 
     source.bookmark();
     if (lexSymbol(source, "..")) {
@@ -851,5 +851,5 @@ do {
         return true;
     }
 
-    return constantExpression(source);
+    return parseConstantExpression(source);
 }

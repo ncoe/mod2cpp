@@ -22,7 +22,7 @@ int main(string[] args) {
 int parse(Source source) in {
     assert(source);
 } body {
-    if (compilationUnit(source)) {
+    if (parseCompilationUnit(source)) {
         lexProgramTail(source); // there may be some whitespace left at the end of the program
 
         writeln("---------------------------------------------");

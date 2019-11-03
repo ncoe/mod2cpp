@@ -17,7 +17,7 @@ import grammar.types;
 //compilationUnit :
 //  definitionModule | IMPLEMENTATION? programModule
 //  ;
-public bool compilationUnit(Source source) nothrow
+public bool parseCompilationUnit(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -28,7 +28,7 @@ do {
     source.bookmark();
 
     source.bookmark();
-    if (definitionModule(source)) {
+    if (parseDefinitionModule(source)) {
         source.commit();
         source.commit();
         return true;
@@ -38,7 +38,7 @@ do {
     }
 
     source.bookmark();
-    if (implementationModule(source)) {
+    if (parseImplementationModule(source)) {
         source.commit();
         source.commit();
         return true;
@@ -54,7 +54,7 @@ do {
     }
 
     source.bookmark();
-    if (programModule(source)) {
+    if (parseProgramModule(source)) {
         source.commit();
         source.commit();
         return true;
@@ -87,33 +87,33 @@ do {
 //  MODULE ident priority? ';'
 //  importList* block ident '.'
 //  ;
-private bool programModule(Source source) nothrow
+private bool parseProgramModule(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "MODULE")) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
 
     source.bookmark();
-    if (protection(source)) {
+    if (parseProtection(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
     if (!lexSymbol(source, ";")) return false;
-    if (!importLists(source)) return false;
-    if (!moduleBlock(source)) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseImportLists(source)) return false;
+    if (!parseModuleBlock(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
     return lexSymbol(source, ".");
 }
 
 //module_identifier :
 //  identifier
 //  ;
-public bool moduleIdentifier(Source source) nothrow
+public bool parseModuleIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -129,27 +129,27 @@ do {
 //priority :
 //  '[' constExpression ']'
 //  ;
-public bool protection(Source source) nothrow
+public bool parseProtection(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexSymbol(source, "[")) return false;
-    if (!protectionExpression(source)) return false;
+    if (!parseProtectionExpression(source)) return false;
     return lexSymbol(source, "]");
 }
 
 //protection_expression :
 //  constant_expression
 //  ;
-private bool protectionExpression(Source source) nothrow
+private bool parseProtectionExpression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return constantExpression(source);
+    return parseConstantExpression(source);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ do {
 //  importList* exportList? definition*
 //  END ident '.'
 //  ;
-private bool definitionModule(Source source) nothrow
+private bool parseDefinitionModule(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -173,14 +173,14 @@ do {
 
     if (!lexKeyword(source, "DEFINITION")) return false;
     if (!lexKeyword(source, "MODULE")) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
     if (!lexSymbol(source, ";")) return false;
-    if (!importLists(source)) return false;
+    if (!parseImportLists(source)) return false;
 
     //todo definitions
 
     if (!lexKeyword(source, "END")) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
     return lexSymbol(source, ".");
 }
 
@@ -195,7 +195,7 @@ do {
 //compilationUnit :	
 //  definitionModule | IMPLEMENTATION? programModule
 //  ;
-private bool implementationModule(Source source) nothrow
+private bool parseImplementationModule(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -203,19 +203,19 @@ do {
 
     if (!lexKeyword(source, "IMPLEMENTATION")) return false;
     if (!lexKeyword(source, "MODULE")) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
 
     source.bookmark();
-    if (protection(source)) {
+    if (parseProtection(source)) {
         source.commit();
     } else {
         source.rollback();
     }
 
     if (!lexSymbol(source, ";")) return false;
-    if (!importLists(source)) return false;
-    if (!moduleBlock(source)) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseImportLists(source)) return false;
+    if (!parseModuleBlock(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
     return lexSymbol(source, ".");
 }
 
@@ -225,7 +225,7 @@ do {
 //import_lists :
 //  ( import_list )*
 //  ;
-public bool importLists(Source source) nothrow
+public bool parseImportLists(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -234,7 +234,7 @@ do {
     while (true) {
         source.bookmark();
 
-        if (!importList(source)) {
+        if (!parseImportList(source)) {
             source.rollback();
             break;
         }
@@ -255,21 +255,21 @@ do {
 //importList :
 //  ( FROM ident )? IMPORT identList ';'
 //  ;
-private bool importList(Source source) nothrow
+private bool parseImportList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (simpleImport(source)) {
+    if (parseSimpleImport(source)) {
         source.commit();
         return true;
     } else {
         source.rollback();
     }
 
-    return unqualifiedImport(source);
+    return parseUnqualifiedImport(source);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -287,7 +287,7 @@ do {
 //  ( FROM moduleId IMPORT ( identList | '*' ) |
 //    IMPORT ident '+'? ( ',' ident '+'? )* ) ';'
 //  ;
-private bool simpleImport(Source source) nothrow
+private bool parseSimpleImport(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -296,7 +296,7 @@ do {
     if (!lexKeyword(source, "IMPORT")) return false;
 
     source.bookmark();
-    if (identifierList(source)) {
+    if (parseIdentifierList(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -328,18 +328,18 @@ do {
 //  ( FROM moduleId IMPORT ( identList | '*' ) |
 //    IMPORT ident '+'? ( ',' ident '+'? )* ) ';'
 //  ;
-private bool unqualifiedImport(Source source) nothrow
+private bool parseUnqualifiedImport(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "FROM")) return false;
-    if (!moduleIdentifier(source)) return false;
+    if (!parseModuleIdentifier(source)) return false;
     if (!lexKeyword(source, "IMPORT")) return false;
 
     source.bookmark();
-    if (identifierList(source)) {
+    if (parseIdentifierList(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -366,14 +366,14 @@ do {
 //exportList :
 //  EXPORT QUALIFIED? identList ';'
 //  ;
-public bool exportList(Source source) nothrow
+public bool parseExportList(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     source.bookmark();
-    if (qualifiedExport(source)) {
+    if (parseQualifiedExport(source)) {
         source.commit();
         return true;
     } else {
@@ -381,7 +381,7 @@ do {
     }
 
     source.bookmark();
-    if (unqualifiedExport(source)) {
+    if (parseUnqualifiedExport(source)) {
         source.commit();
         return true;
     } else {
@@ -397,14 +397,14 @@ do {
 //unqualified_export :
 //  'EXPORT' identifier_list ';'
 //  ;
-private bool unqualifiedExport(Source source) nothrow
+private bool parseUnqualifiedExport(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "EXPORT")) return false;
-    if (!identifierList(source)) return false;
+    if (!parseIdentifierList(source)) return false;
     return lexSymbol(source, ";");
 }
 
@@ -414,7 +414,7 @@ do {
 //qualified_export :
 //  'EXPORT' 'QUALIFIED' identifier_list ';'
 //  ;
-private bool qualifiedExport(Source source) nothrow
+private bool parseQualifiedExport(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -422,6 +422,6 @@ do {
 
     if (!lexKeyword(source, "EXPORT")) return false;
     if (!lexKeyword(source, "QUALIFIED")) return false;
-    if (!identifierList(source)) return false;
+    if (!parseIdentifierList(source)) return false;
     return lexSymbol(source, ";");
 }

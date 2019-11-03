@@ -11,7 +11,7 @@ import grammar.qualified;
 //  entire_designator | indexed_designator | selected_designator |
 //  dereferenced_designator
 //  ;
-public bool variableDesignator(Source source) nothrow
+public bool parseVariableDesignator(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
@@ -53,7 +53,7 @@ do {
 //field_identifier :
 //  identifier
 //  ;
-public bool fieldIdentifier(Source source) nothrow
+public bool parseFieldIdentifier(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();

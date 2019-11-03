@@ -18,16 +18,16 @@ import grammar.statement;
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-public bool properProcedureBlock(Source source) nothrow
+public bool parseProperProcedureBlock(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!declarations(source)) return false;
+    if (!parseDeclarations(source)) return false;
 
     source.bookmark();
-    if (procedureBody(source)) {
+    if (parseProcedureBody(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -39,14 +39,14 @@ do {
 //procedure_body :
 //  'BEGIN' block_body
 //  ;
-private bool procedureBody(Source source) nothrow
+private bool parseProcedureBody(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "BEGIN")) return false;
-    return blockBody(source);
+    return parseBlockBody(source);
 }
 
 // 4.2 Function Procedure Block
@@ -59,28 +59,28 @@ do {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-public bool functionProcedureBlock(Source source) nothrow
+public bool parseFunctionProcedureBlock(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!declarations(source)) return false;
-    if (!functionBody(source)) return false;
+    if (!parseDeclarations(source)) return false;
+    if (!parseFunctionBody(source)) return false;
     return lexKeyword(source, "END");
 }
 
 //function_body :
 //  'BEGIN' block_body
 //  ;
-private bool functionBody(Source source) nothrow
+private bool parseFunctionBody(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "BEGIN")) return false;
-    return blockBody(source);
+    return parseBlockBody(source);
 }
 
 // 4.3 Module Block
@@ -93,16 +93,16 @@ do {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-public bool moduleBlock(Source source) nothrow
+public bool parseModuleBlock(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!declarations(source)) return false;
+    if (!parseDeclarations(source)) return false;
 
     source.bookmark();
-    if (moduleBody(source)) {
+    if (parseModuleBody(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -119,16 +119,16 @@ do {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-private bool moduleBody(Source source) nothrow
+private bool parseModuleBody(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!initializationBody(source)) return false;
+    if (!parseInitializationBody(source)) return false;
 
     source.bookmark();
-    if (finalizationBody(source)) {
+    if (parseFinalizationBody(source)) {
         source.commit();
     } else {
         source.rollback();
@@ -145,27 +145,27 @@ do {
 //  declaration*
 //  ( BEGIN statementSequence )? END
 //  ;
-private bool initializationBody(Source source) nothrow
+private bool parseInitializationBody(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "BEGIN")) return false;
-    return blockBody(source);
+    return parseBlockBody(source);
 }
 
 //finalization_body :
 //  'FINALLY' block_body
 //  ;
-private bool finalizationBody(Source source) nothrow
+private bool parseFinalizationBody(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!lexKeyword(source, "FINALLY")) return false;
-    return blockBody(source);
+    return parseBlockBody(source);
 }
 
 // 4.4 Block Bodies and Exception Handling
@@ -173,17 +173,17 @@ do {
 //block_body :
 //  normal_part ( 'EXCEPT' exceptional_part )?
 //  ;
-private bool blockBody(Source source) nothrow
+private bool parseBlockBody(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    if (!normalPart(source)) return false;
+    if (!parseNormalPart(source)) return false;
 
     source.bookmark();
     if (lexKeyword(source, "EXCEPT")) {
-        if (exceptionalPart(source)) {
+        if (parseExceptionalPart(source)) {
             source.commit();
         } else {
             source.rollback();
@@ -198,23 +198,23 @@ do {
 //normal_part :
 //  statement_sequence
 //  ;
-private bool normalPart(Source source) nothrow
+private bool parseNormalPart(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return statementSequence(source);
+    return parseStatementSequence(source);
 }
 
 //exceptional_part :
 //  statement_sequence
 //  ;
-private bool exceptionalPart(Source source) nothrow
+private bool parseExceptionalPart(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    return statementSequence(source);
+    return parseStatementSequence(source);
 }
