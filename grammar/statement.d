@@ -189,7 +189,9 @@ do {
             break;
         }
         if (!statement(source)) {
-            source.rollback();
+            //NOTE: the empty statement does not handle the case where the last part of the sequence is the semicolon.
+            //source.rollback();
+            source.commit();
             break;
         }
 
@@ -360,6 +362,13 @@ do {
 //if_statement :
 //  guarded_statements ( if_else_part )? 'END'
 //  ;
+// ***** PIM 4 Appendix 1 lines 60-62 *****
+//ifStatement :
+//  IF expression THEN statementSequence
+//  ( ELSIF expression THEN statementSequence )*
+//  ( ELSE statementSequence )?
+//  END
+//  ;
 private bool ifStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
@@ -382,6 +391,13 @@ do {
 //  'IF' boolean_expression 'THEN' statement_sequence
 //  ( 'ELSIF' boolean_expression 'THEN' statement_sequence )*
 //  ;
+// ***** PIM 4 Appendix 1 lines 60-62 *****
+//ifStatement :
+//  IF expression THEN statementSequence
+//  ( ELSIF expression THEN statementSequence )*
+//  ( ELSE statementSequence )?
+//  END
+//  ;
 private bool guardedStatements(Source source) nothrow
 in (source, "Why is the source null?")
 do {
@@ -389,9 +405,34 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!consumeKeyword(source, "IF")) return false;
+    if (!booleanExpression(source)) return false;
+    if (!consumeKeyword(source, "THEN")) return false;
+    if (!statementSequence(source)) return false;
 
-    debugWrite(source, "End of Implementation");
-    assert(false, "todo finish this");
+    while (true) {
+        source.bookmark();
+
+        if (!consumeKeyword(source, "ELSIF")) {
+            source.rollback();
+            break;
+        }
+        if (!booleanExpression(source)) {
+            source.rollback();
+            break;
+        }
+        if (!consumeKeyword(source, "THEN")) {
+            source.rollback();
+            break;
+        }
+        if (!statementSequence(source)) {
+            source.rollback();
+            break;
+        }
+
+        source.commit();
+    }
+
+    return true;
 }
 
 //if_else_part :
@@ -533,6 +574,11 @@ do {
 //  'FOR' control_variable_identifier ':=' initial_value 'TO' final_value
 //  ( 'BY' step_size )? 'DO' statement_sequence 'END'
 //  ;
+// ***** PIM 4 Appendix 1 lines 68-69 *****
+//forStatement :
+//  FOR ident ':=' expression TO expression ( BY constExpression )?
+//  DO statementSequence END
+//  ;
 private bool forStatement(Source source) nothrow
 in (source, "Why is the source null?")
 do {
@@ -540,23 +586,69 @@ do {
     scope(exit) assertEqual(initDepth, source.depth());
 
     if (!consumeKeyword(source, "FOR")) return false;
+    if (!controlVariableIdentifier(source)) return false;
+    if (!consumeSymbol(source, ":=")) return false;
+    if (!initialValue(source)) return false;
+    if (!consumeKeyword(source, "TO")) return false;
+    if (!finalValue(source)) return false;
 
-    debugWrite(source, "End of Implementation");
-    assert(false, "todo finish this");
+    source.bookmark();
+    if (consumeKeyword(source, "BY")) {
+        source.commit();
+        if (!stepSize(source)) return false;
+    } else {
+        source.rollback();
+    }
+
+    if (!consumeKeyword(source, "DO")) return false;
+    if (!statementSequence(source)) return false;
+    return consumeKeyword(source, "END");
 }
 
 //control_variable_identifier :
 //  identifier
 //  ;
+private bool controlVariableIdentifier(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return cast(bool) identifier(source);
+}
 
 //initial_value :
 //  ordinal_expression
 //  ;
+private bool initialValue(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return ordinalExpression(source);
+}
 
 //final_value :
 //  ordinal_expression
 //  ;
+private bool finalValue(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return ordinalExpression(source);
+}
 
 //step_size :
 //  constant_expression
 //  ;
+private bool stepSize(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return constantExpression(source);
+}

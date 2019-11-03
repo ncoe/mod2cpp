@@ -2,6 +2,7 @@ import std.stdio;
 
 import compiler.source;
 import compiler.util;
+import grammar.lex;
 import grammar.program;
 
 int main(string[] args) {
@@ -22,6 +23,8 @@ int parse(Source source) in {
     assert(source);
 } body {
     if (compilationUnit(source)) {
+        consumeTail(source); // there may be some whitespace left at the end of the program
+
         writeln("---------------------------------------------");
         writeln("Source was successfully parsed.");
         if (source.offset < source.length) {
@@ -29,6 +32,7 @@ int parse(Source source) in {
             stderr.writeln("Next byte is: ", source.front);
             return 1;
         } else {
+            writeln("All input has been consumed.");
             return 0;
         }
     } else {

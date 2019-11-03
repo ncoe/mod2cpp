@@ -113,10 +113,18 @@ do {
     if (source.empty) return false;
 
     auto c = source.front;
+    auto d = source.next;
     return c == ' '
         || c == '\t'
         || c == '\n'
-        || c == '\r';
+        || c == '\r'
+        || c == '(' && d == '*';
+}
+
+public void consumeTail(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    consumeWhitespace(source);
 }
 
 private bool consumeWhitespace(Source source) nothrow
@@ -141,11 +149,53 @@ do {
             }
 
             source.updateLine();
+        } else if (c == '(') {
+            consumeComment(source);
         } else {
             source.popFront();
         }
     }
     return found;
+}
+
+private bool consumeComment(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    source.bookmark();
+    if (source.front == '(') {
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+    if (source.front == '*') {
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+
+    while (!source.empty) {
+        if (source.front == '(') {
+            if (!consumeComment(source)) {
+                source.popFront();
+            }
+        } else if (source.front == '*') {
+            source.popFront();
+            if (!source.empty && source.front == ')') {
+                source.popFront();
+                break;
+            }
+        } else {
+            source.popFront();
+        }
+    }
+
+    source.commit();
+    return true;
 }
 
 /**
@@ -174,16 +224,21 @@ do {
 
     consumeWhitespace(source);
     if (source.empty) return noID();
+    source.bookmark();
 
     string id;
 
     auto prev = source.previous();
     if (isLetter(prev) || isDigit(prev)) {
         // Can't be a valid identifier unless there is a boundery prior to beginning to parse.
+        source.rollback();
         return noID();
     }
 
-    if (!isLetter(source.front)) return noID();
+    if (!isLetter(source.front)) {
+        source.rollback();
+        return noID();
+    }
     id ~= source.front;
     source.popFront();
 
@@ -192,7 +247,48 @@ do {
         source.popFront();
     }
 
+    if (isKeyword(id)) {
+        source.rollback();
+        return noID();
+    }
+
+    source.commit();
     return withID(id);
+}
+
+private bool isKeyword(string value) nothrow {
+    //todo the remaining keywords
+    return value == "BEGIN"
+        || value == "BY"
+        || value == "CASE"
+        || value == "DO"
+        || value == "ELSE"
+        || value == "ELSIF"
+        || value == "END"
+        || value == "EXIT"
+        || value == "FOR"
+        || value == "IF"
+        || value == "LOOP"
+        || value == "MODULE"
+        || value == "PROCEDURE"
+        || value == "REPEAT"
+        || value == "RETRY"
+        || value == "RETURN"
+        || value == "VAR"
+        || value == "WHILE"
+        || value == "WITH";
+}
+
+// ***** PIM 4 Appendix 1 line 2 *****
+// number : INTEGER | REAL ; // see lexer
+public bool number(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    if (realLiteral(source)) return true;
+    return wholeNumberLiteral(source);
 }
 
 //whole_number_literal :
@@ -283,8 +379,43 @@ do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    debugWrite(source, "End of Implementation");
-    assert(false, "todo finish this");
+    consumeWhitespace(source);
+    source.bookmark();
+
+    //DIGIT+
+    if (isDigit(source.front)) {
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+    while (isDigit(source.front)) {
+        source.popFront();
+    }
+
+    // '.'
+    if (source.front == '.') {
+        source.popFront();
+    } else {
+        source.rollback();
+        return false;
+    }
+
+    //DIGIT*
+    while (isDigit(source.front)) {
+        source.popFront();
+    }
+    source.commit();
+
+    //SCALE_FACTOR?
+    source.bookmark();
+    if (scaleFactor(source)) {
+        source.commit();
+    } else {
+        source.rollback();
+    }
+
+    return true;
 }
 
 //string_literal :
@@ -308,7 +439,7 @@ do {
 
     source.bookmark();
     if (consumeSymbol(source, "'")) {
-        while (isCharacter(source.front)) {
+        while (isCharacter(source.front) || source.front == '"') {
             source.popFront();
         }
 
@@ -324,7 +455,7 @@ do {
 
     source.bookmark();
     if (consumeSymbol(source, `"`)) {
-        while (isCharacter(source.front)) {
+        while (isCharacter(source.front) || source.front == '\'') {
             source.popFront();
         }
 

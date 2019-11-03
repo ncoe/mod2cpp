@@ -407,8 +407,13 @@ do {
 
     source.bookmark();
     if (procedureDeclaration(source)) {
-        source.commit();
-        return true;
+        if (consumeSymbol(source, ";")) {
+            source.commit();
+            return true;
+        } else {
+            source.rollback();
+            return false;
+        }
     } else {
         source.rollback();
     }

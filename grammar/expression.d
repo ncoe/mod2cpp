@@ -3,6 +3,7 @@ module grammar.expression;
 import compiler.source;
 import compiler.util;
 import grammar.lex;
+import grammar.parameter;
 import grammar.qualified;
 import grammar.variable;
 
@@ -11,23 +12,105 @@ import grammar.variable;
 //expression :
 //  simple_expression ( relational_operator simple_expression )?
 //  ;
+// ***** PIM 4 Appendix 1 line 47 *****
+//expression :
+//  simpleExpression ( relation simpleExpression )?
+//  ;
 public bool expression(Source source) nothrow
 in (source, "Why is the source null?")
 do {
     const initDepth = source.depth();
     scope(exit) assertEqual(initDepth, source.depth());
 
-    debugWrite(source, "End of Implementation");
-    assert(false, "todo finish this");
+    if (!simpleExpression(source)) return false;
+
+    source.bookmark();
+    if (relationalOperator(source)) {
+        source.commit();
+        return simpleExpression(source);
+    } else {
+        source.rollback();
+    }
+
+    return true;
 }
 
 //simple_expression :
 //  ( '+' | '-' )? term ( term_operator term )*
 //  ;
+// ***** PIM 4 Appendix 1 line 48 *****
+//simpleExpression :
+//  ( '+' | '-' {})? term ( addOperator term )*
+//  ;
+private bool simpleExpression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    source.bookmark();
+    if (consumeSymbol(source, "+")) {
+        source.commit();
+    } else if (consumeSymbol(source, "-")) {
+        source.commit();
+    } else {
+        source.rollback();
+    }
+
+    if (!term(source)) return false;
+
+    while (true) {
+        source.bookmark();
+
+        if (!addOperator(source)) {
+            source.rollback();
+            break;
+        }
+
+        if (!term(source)) {
+            source.rollback();
+            break;
+        }
+
+        source.commit();
+    }
+
+    return true;
+}
 
 //term :
 //  factor ( factor_operator factor )*
 //  ;
+// ***** PIM 4 Appendix 1 line 49 *****
+//term :
+//  factor ( mulOperator factor )*
+//  ;
+private bool term(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    if (!factor(source)) return false;
+
+    while (true) {
+        source.bookmark();
+
+        if (!mulOperator(source)) {
+            source.rollback();
+            break;
+        }
+
+        if (!factor(source)) {
+            source.rollback();
+            break;
+        }
+
+        source.commit();
+    }
+
+    return true;
+}
 
 //factor :
 //  '(' expression ')' |
@@ -37,10 +120,142 @@ do {
 //  value_constructor |
 //  constant_literal
 //  ;
+// ***** PIM 4 Appendix 1 lines 50-51 *****
+// refactored for LL(1)
+//
+// Note: PIM 4 text says '~' is a synonym for 'NOT'
+//       but the grammar does not actually show it
+//factor :
+//  number |
+//  string |
+//  setOrDesignatorOrProcCall |
+//  '(' expression ')' | ( NOT | '~' {}) factor
+//  ;
+private bool factor(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    if (number(source)) return true;
+    if (stringLiteral(source)) return true;
+
+    if (consumeKeyword(source, "NOT") || consumeSymbol(source, "~")) {
+        return factor(source);
+    }
+
+    source.bookmark();
+    if (consumeSymbol(source, "(")) {
+        if (expression(source)) {
+            source.commit();
+            return consumeSymbol(source, ")");
+        } else {
+            source.rollback();
+        }
+    } else {
+        source.rollback();
+    }
+
+    return setOrDesignatorOrProcCall(source);
+}
+
+// ***** PIM 4 Appendix 1 lines 50-51 *****
+// new for LL(1)
+//setOrDesignatorOrProcCall :
+//  set |
+//  qualident /* <= factored out */
+//  ( set | designatorTail? actualParameters? )
+//;
+private bool setOrDesignatorOrProcCall(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    //set |
+    source.bookmark();
+    if (set(source)) {
+        source.commit();
+        return true;
+    } else {
+        source.rollback();
+    }
+
+    //qualident
+    if (!qualifiedIdentifier(source)) return false;
+
+    // set |
+    source.bookmark();
+    if (set(source)) {
+        source.commit();
+        return true;
+    } else {
+        source.rollback();
+    }
+
+    //designatorTail?
+    source.bookmark();
+    if (designatorTail(source)) {
+        source.commit();
+        return true;
+    } else {
+        source.rollback();
+    }
+
+    //actualParameters?
+    source.bookmark();
+    if (actualParameters(source)) {
+        source.commit();
+        return true;
+    } else {
+        source.rollback();
+    }
+
+    return true;
+}
+
+// ***** PIM 4 Appendix 1 line 46 *****
+//expList :
+//  expression ( ',' expression )*
+//  ;
+private bool expressionList(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    if (!expression(source)) return false;
+
+    while (true) {
+        source.bookmark();
+
+        if (!consumeSymbol(source, ",")) {
+            source.rollback();
+            break;
+        }
+
+        if (!expression(source)) {
+            source.rollback();
+            break;
+        }
+
+        source.commit();
+    }
+
+    return true;
+}
 
 //ordinal_expression :
 //  expression
 //  ;
+public bool ordinalExpression(Source source) nothrow
+in (source, "Why is the source null?")
+do {
+    const initDepth = source.depth();
+    scope(exit) assertEqual(initDepth, source.depth());
+
+    return expression(source);
+}
 
 // 7.1 Infix Expressions
 
